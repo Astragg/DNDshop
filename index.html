@@ -1,72 +1,542 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Nexus Pads — Coming Soon</title>
-  <style>
-    /* reset */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dragon Age - The Black Emporium</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Uncial+Antiqua&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    /* full-screen dark gradient */
-    body {
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
-      overflow: hidden;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+        body {
+            background: linear-gradient(135deg, #1a0f1a 0%, #2d1b2d 50%, #1a0f1a 100%);
+            background-attachment: fixed;
+            font-family: 'Uncial Antiqua', cursive;
+            color: #e8d5b7;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
 
-    /* center container */
-    .center {
-      text-align: center;
-    }
+        /* Animated background elements */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(139,69,19,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(75,0,130,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(139,69,19,0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
 
-    /* central “N” logo */
-    .logo-img {
-      width: 40vmin;
-      height: auto;
-      display: block;
-      margin: 0 auto;
-      transition: transform 0.3s ease;
-    }
-    .logo-img:hover {
-      transform: scale(1.1);
-    }
+        .shop-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
 
-    /* “Coming Soon..” under the N */
-    .coming-soon {
-      margin-top: 1rem;
-      font-size: 2rem;
-      color: #fff;
-      text-shadow: 0 0 8px #fff;
-    }
+        .shop-header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
 
-    /* bottom-right text */
-    .bottom-text {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      font-size: 1rem;
-      font-weight: bold;
-      color: #fff;
-      text-shadow: 0 0 4px #fff;
-      pointer-events: none;
-    }
-  </style>
+        .shop-title {
+            font-family: 'Cinzel', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #ffd700;
+            text-shadow: 
+                0 0 10px #ffd700,
+                2px 2px 4px rgba(0,0,0,0.8),
+                -2px -2px 4px rgba(255,215,0,0.3);
+            margin-bottom: 10px;
+            letter-spacing: 3px;
+        }
+
+        .shop-subtitle {
+            font-size: 1.2rem;
+            color: #b8860b;
+            font-style: italic;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .refresh-info {
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #8b4513;
+            border-radius: 10px;
+            padding: 15px 25px;
+            display: inline-block;
+            margin-bottom: 10px;
+            box-shadow: 0 0 20px rgba(139,69,19,0.3);
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .item-card {
+            background: linear-gradient(145deg, rgba(45,27,45,0.95), rgba(25,15,25,0.95));
+            border: 2px solid #8b4513;
+            border-radius: 15px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 8px 32px rgba(0,0,0,0.6),
+                inset 0 1px 0 rgba(255,215,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .item-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 
+                0 15px 40px rgba(139,69,19,0.4),
+                0 0 30px rgba(255,215,0,0.2);
+            border-color: #ffd700;
+        }
+
+        .item-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #4a2c2a, #3d1f1d);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #654321;
+        }
+
+        .item-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .item-card:hover .item-image::before {
+            left: 100%;
+        }
+
+        .item-name {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #ffd700;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .item-description {
+            color: #d4af37;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .item-price {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ff6b35;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            margin-bottom: 15px;
+        }
+
+        .item-price .coin-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #ffd700, #ffed4e);
+            border-radius: 50%;
+            margin-right: 8px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+            position: relative;
+            top: 2px;
+        }
+
+        .item-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .stat-tag {
+            background: rgba(139,69,19,0.3);
+            color: #ffd700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #8b4513;
+            font-weight: 500;
+        }
+
+        .buy-button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(145deg, #8b4513, #a0522d);
+            color: #ffd700;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .buy-button:hover {
+            background: linear-gradient(145deg, #a0522d, #cd853f);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139,69,19,0.4);
+        }
+
+        .buy-button:active {
+            transform: translateY(0);
+        }
+
+        .refresh-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #ffd700;
+            font-size: 2rem;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .refresh-overlay .key-display {
+            font-size: 4rem;
+            margin: 20px 0;
+            text-shadow: 0 0 20px #ffd700;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #b8860b;
+            font-size: 0.9rem;
+            border-top: 1px solid #8b4513;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .shop-title {
+                font-size: 2.5rem;
+            }
+            
+            .items-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .item-card {
+                padding: 20px;
+            }
+        }
+
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffd700;
+            border-radius: 50%;
+            animation: float 6s infinite linear;
+            opacity: 0.6;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="center">
-    <!-- central “N” -->
-    <img src="assets/NexusPads.png" alt="Nexus Pads Logo" class="logo-img">
+    <div class="shop-container">
+        <div class="shop-header">
+            <h1 class="shop-title">The Black Emporium</h1>
+            <p class="shop-subtitle">Rare Wares for Discerning Adventurers</p>
+        </div>
 
-    <!-- coming-soon text -->
-    <div class="coming-soon">Coming Soon..</div>
-  </div>
+        <div class="controls">
+            <div class="refresh-info">
+                💰 Press <strong>SPACEBAR</strong> to refresh stock 💰
+            </div>
+        </div>
 
-  <!-- bottom-right text -->
-  <div class="bottom-text">Nexus Pads</div>
+        <div class="items-grid" id="itemsGrid">
+            <!-- Items will be populated by JavaScript -->
+        </div>
+
+        <div class="footer">
+            ⚔️ Crafted for Dragon Age: The Veilguard ⚔️
+        </div>
+    </div>
+
+    <div class="refresh-overlay" id="refreshOverlay">
+        <div>Refreshing Stock...</div>
+        <div class="key-display">⟳</div>
+        <div>New wares appear!</div>
+    </div>
+
+    <script>
+        // Dragon Age themed items
+        const itemTemplates = [
+            {
+                name: "Blade of the Warden",
+                description: "A longsword forged in the fires of Orzammar, tempered with lyrium.",
+                price: 850,
+                stats: ["+25 Damage", "15% Crit Chance", "Bleed Effect"],
+                rarity: "legendary"
+            },
+            {
+                name: "Fade-Touched Leather",
+                description: "Supple armor infused with the essence of the Fade itself.",
+                price: 420,
+                stats: ["+12 Defense", "+8 Magic Resist", "Fade Step"],
+                rarity: "rare"
+            },
+            {
+                name: "Lyrium-Laced Ring",
+                description: "A silver band pulsing with raw magical energy.",
+                price: 275,
+                stats: ["+20 Mana", "+10% Spell Power", "Mana Regen"],
+                rarity: "epic"
+            },
+            {
+                name: "Dwarven Throwing Axe",
+                description: "Perfectly balanced for combat, made by master smiths.",
+                price: 180,
+                stats: ["+18 Damage", "Bounce Effect", "Returning"],
+                rarity: "common"
+            },
+            {
+                name: "Antivan Poison Vial",
+                description: "A deadly concoction from the Crows of Antiva.",
+                price: 95,
+                stats: ["Instant Poison", "5 Stacks", "Anti-Mage"],
+                rarity: "uncommon"
+            },
+            {
+                name: "Elven Spirit Essence",
+                description: "Distilled from ancient Dalish rituals.",
+                price: 320,
+                stats: ["Full Heal", "Temp HP", "Spirit Vision"],
+                rarity: "rare"
+            },
+            {
+                name: "Qunari War Paint",
+                description: "Grants the ferocity of the Arishok himself.",
+                price: 150,
+                stats: ["+15 Strength", "Rage Mode", "Taunt"],
+                rarity: "uncommon"
+            },
+            {
+                name: "Chantry Blessed Amulet",
+                description: "Protected by the Maker's light.",
+                price: 210,
+                stats: ["+18 Willpower", "Holy Ward", "Purify"],
+                rarity: "epic"
+            }
+        ];
+
+        // Rarity colors
+        const rarityColors = {
+            common: '#c0c0c0',
+            uncommon: '#00ff7f',
+            rare: '#4169e1',
+            epic: '#9932cc',
+            legendary: '#ffd700'
+        };
+
+        let currentStock = [];
+
+        function generateRandomStock() {
+            const stock = [];
+            const stockSize = 6 + Math.floor(Math.random() * 4); // 6-9 items
+            
+            for (let i = 0; i < stockSize; i++) {
+                const template = itemTemplates[Math.floor(Math.random() * itemTemplates.length)];
+                const priceMultiplier = 0.8 + Math.random() * 0.4; // 80-120% of base price
+                const item = {
+                    ...template,
+                    id: Date.now() + i,
+                    price: Math.round(template.price * priceMultiplier),
+                    stock: Math.floor(Math.random() * 3) + 1 // 1-3 available
+                };
+                stock.push(item);
+            }
+            return stock;
+        }
+
+        function createItemCard(item) {
+            const rarityColor = rarityColors[item.rarity] || '#ffffff';
+            const imageStyle = getItemImageStyle(item.rarity);
+            
+            return `
+                <div class="item-card" style="--rarity-color: ${rarityColor}">
+                    <div class="item-image" style="background: ${imageStyle}">
+                        <div style="position: absolute; top: 10px; right: 10px; 
+                                   background: ${rarityColor}; color: #000; 
+                                   padding: 4px 8px; border-radius: 12px; 
+                                   font-size: 0.8rem; font-weight: bold;">
+                            ${item.rarity.toUpperCase()}
+                        </div>
+                    </div>
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-description">${item.description}</div>
+                    <div class="item-stats">
+                        ${item.stats.map(stat => `<span class="stat-tag">${stat}</span>`).join('')}
+                    </div>
+                    <div class="item-price">
+                        <span class="coin-icon"></span>
+                        ${item.price.toLocaleString()}
+                    </div>
+                    <button class="buy-button" onclick="buyItem(${item.id})">
+                        Purchase (${item.stock} left)
+                    </button>
+                </div>
+            `;
+        }
+
+        function getItemImageStyle(rarity) {
+            const styles = {
+                common: 'linear-gradient(45deg, #8b7355, #a0522d)',
+                uncommon: 'linear-gradient(45deg, #228b22, #32cd32)',
+                rare: 'linear-gradient(45deg, #4169e1, #1e90ff)',
+                epic: 'linear-gradient(45deg, #8a2be2, #9932cc)',
+                legendary: 'linear-gradient(45deg, #ffd700, #ffed4e)'
+            };
+            return styles[rarity] || styles.common;
+        }
+
+        function refreshStock() {
+            currentStock = generateRandomStock();
+            const grid = document.getElementById('itemsGrid');
+            grid.innerHTML = currentStock.map(item => createItemCard(item)).join('');
+            
+            // Show refresh animation
+            const overlay = document.getElementById('refreshOverlay');
+            overlay.classList.add('show');
+            setTimeout(() => {
+                overlay.classList.remove('show');
+            }, 1500);
+        }
+
+        function buyItem(itemId) {
+            const item = currentStock.find(i => i.id === itemId);
+            if (item && item.stock > 0) {
+                item.stock--;
+                const card = document.querySelector(`[onclick="buyItem(${itemId})"]`).closest('.item-card');
+                const button = card.querySelector('.buy-button');
+                
+                if (item.stock === 0) {
+                    button.textContent = 'SOLD OUT';
+                    button.disabled = true;
+                    button.style.opacity = '0.6';
+                } else {
+                    button.textContent = `Purchase (${item.stock} left)`;
+                }
+                
+                // Flash effect
+                card.style.boxShadow = '0 0 30px #00ff00';
+                setTimeout(() => {
+                    card.style.boxShadow = '';
+                }, 500);
+            }
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space') {
+                event.preventDefault();
+                refreshStock();
+            }
+        });
+
+        // Initialize shop
+        window.addEventListener('load', function() {
+            refreshStock();
+            
+            // Create floating particles
+            setInterval(() => {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDuration = (4 + Math.random() * 4) + 's';
+                particle.style.animationDelay = Math.random() * 2 + 's';
+                document.body.appendChild(particle);
+                
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                }, 8000);
+            }, 1000);
+        });
+    </script>
 </body>
 </html>

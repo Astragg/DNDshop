@@ -7,7 +7,7 @@
       "stats": ["1 Day Food", "No Exhaustion"],
       "rarity": "common",
       "tier": "basic",
-      "stockRange": [20, 50]
+      "stockRange": [20, 50],
       "spawnChance": 0.15
     },
     {
@@ -17,7 +17,7 @@
       "stats": ["1 Day Food", "Heals 1HP if eaten outside camp"],
       "rarity": "common",
       "tier": "basic",
-      "stockRange": [15, 40]
+      "stockRange": [15, 40],
       "spawnChance": 0.15
     },
     {
@@ -27,7 +27,7 @@
       "stats": ["Heal 1d4+2", "Stop Bleeding"],
       "rarity": "uncommon",
       "tier": "basic",
-      "stockRange": [25, 60]
+      "stockRange": [25, 60],
       "spawnChance": 0.15
     },
     {
@@ -37,7 +37,7 @@
       "stats": ["+1d4 vs Demons", "Purify Water"],
       "rarity": "uncommon",
       "tier": "basic",
-      "stockRange": [12, 30]
+      "stockRange": [12, 30],
       "spawnChance": 0.15
     },
     {
@@ -47,7 +47,7 @@
       "stats": ["1d6 Piercing"],
       "rarity": "common",
       "tier": "common",
-      "stockRange": [8, 15]
+      "stockRange": [8, 15],
       "spawnChance": 0.15
     },
     {
@@ -57,7 +57,7 @@
       "stats": ["+1d6 Poison damage for 2 turns"],
       "rarity": "uncommon",
       "tier": "common",
-      "stockRange": [10, 25]
+      "stockRange": [10, 25],
       "spawnChance": 0.15
     },
     {
@@ -67,7 +67,7 @@
       "stats": ["+1 AC while wearing"],
       "rarity": "uncommon",
       "tier": "common",
-      "stockRange": [6, 12]
+      "stockRange": [6, 12],
       "spawnChance": 0.15
     },
     {
@@ -77,7 +77,7 @@
       "stats": ["1d8+4 Slashing, One handed"],
       "rarity": "rare",
       "tier": "quality",
-      "stockRange": [3, 6]
+      "stockRange": [3, 6],
       "spawnChance": 0.15
     },
     {
@@ -87,7 +87,7 @@
       "stats": ["AC 13 +1d6 reduction to demon attacks"],
       "rarity": "rare",
       "tier": "quality",
-      "stockRange": [1, 1]
+      "stockRange": [1, 1],
       "spawnChance": 0.10
     },
     {
@@ -97,7 +97,7 @@
       "stats": ["+2 AC while wearing"],
       "rarity": "epic",
       "tier": "quality",
-      "stockRange": [1, 1]
+      "stockRange": [1, 1],
       "spawnChance": 0.05
     },
     {
@@ -107,7 +107,7 @@
       "stats": ["2d6 Slashing +1d8 Slashing against Darkspawn. One Handed"],
       "rarity": "legendary",
       "tier": "legendary",
-      "stockRange": [1, 1]
+      "stockRange": [1, 1],
       "spawnChance": 0.005
     },
     {
@@ -117,7 +117,7 @@
       "stats": ["1d6 Resistance to magic"],
       "rarity": "epic",
       "tier": "legendary",
-      "stockRange": [1, 2]
+      "stockRange": [1, 2],
       "spawnChance": 0.05
     },
     {
@@ -127,11 +127,12 @@
       "stats": ["Full Heal"],
       "rarity": "legendary",
       "tier": "legendary",
-      "stockRange": [1, 3]
+      "stockRange": [1, 3],
       "spawnChance": 0.10
     }
   ]
 }
+
 
 
 

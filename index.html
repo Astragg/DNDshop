@@ -634,7 +634,7 @@
 
     <script>
         // VERSION WATERMARK SYSTEM
-        const SHOP_VERSION = "v2";
+        const SHOP_VERSION = "v2.1.0";
         const STORAGE_KEY = 'shopVersion';
 
         // WEBHOOK CONFIG
@@ -999,12 +999,13 @@
             }, 1000);
         }
 
-        // SHOP FUNCTIONS - NEW SPAWN SYSTEM
+        // SHOP FUNCTIONS - UPDATED SPAWN SYSTEM
         function generateRandomStock() {
             const stock = [];
             const stockSize = 8 + Math.floor(Math.random() * 4); // 8-11 items
             const commons = itemTemplates.filter(item => item.rarity === 'common');
             const nonCommons = itemTemplates.filter(item => item.rarity !== 'common');
+            let legendaryCount = 0;
 
             // Step 1: Guarantee 5 common items
             const shuffledCommons = commons.sort(() => Math.random() - 0.5);
@@ -1018,27 +1019,56 @@
                 stock.push(item);
             });
 
-            // Step 2: Fill remaining slots (3-6) with weighted selection favoring rarer items
+            // Step 2: Fill remaining slots with weighted selection
             const remainingSlots = stockSize - stock.length;
-            if (remainingSlots > 0 && nonCommons.length > 0) {
-                // Calculate inverse weights: lower spawnChance = higher weight
-                const maxChance = Math.max(...nonCommons.map(item => item.spawnChance));
-                const weights = nonCommons.map(item => maxChance / item.spawnChance);
-                const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+            if (remainingSlots > 0) {
+                const rarityWeights = {
+                    legendary: 1,
+                    epic: 5,
+                    rare: 10,
+                    uncommon: 15,
+                    common: 20
+                };
+
+                const weightedItems = itemTemplates.map(item => ({
+                    item,
+                    weight: rarityWeights[item.rarity] || 10
+                }));
+                const totalWeight = weightedItems.reduce((sum, { weight }) => sum + weight, 0);
 
                 for (let i = 0; i < remainingSlots; i++) {
                     const roll = Math.random() * totalWeight;
                     let cumulativeWeight = 0;
                     let selectedItem = null;
 
-                    for (let j = 0; j < nonCommons.length; j++) {
-                        cumulativeWeight += weights[j];
+                    // Try selecting an item
+                    for (let { item, weight } of weightedItems) {
+                        cumulativeWeight += weight;
                         if (roll <= cumulativeWeight) {
-                            selectedItem = nonCommons[j];
-                            break;
+                            // Check spawnChance and legendary limit
+                            if (Math.random() <= item.spawnChance && (item.rarity !== 'legendary' || legendaryCount < 1)) {
+                                selectedItem = item;
+                                if (item.rarity === 'legendary') legendaryCount++;
+                                break;
+                            }
                         }
                     }
 
+                    // Fallback: Try lower rarities if no item selected
+                    if (!selectedItem) {
+                        const fallbacks = [
+                            itemTemplates.filter(item => item.rarity === 'uncommon' && Math.random() <= item.spawnChance),
+                            itemTemplates.filter(item => item.rarity === 'common')
+                        ];
+                        for (let fallbackList of fallbacks) {
+                            if (fallbackList.length > 0) {
+                                selectedItem = fallbackList[Math.floor(Math.random() * fallbackList.length)];
+                                break;
+                            }
+                        }
+                    }
+
+                    // Add selected item to stock
                     if (selectedItem) {
                         const item = {
                             ...selectedItem,
@@ -1046,17 +1076,6 @@
                             stock: Math.floor(Math.random() * (selectedItem.stockRange[1] - selectedItem.stockRange[0] + 1)) + selectedItem.stockRange[0]
                         };
                         stock.push(item);
-                    } else {
-                        // Fallback: pick a common if no non-common selected
-                        const fallback = commons[Math.floor(Math.random() * commons.length)];
-                        if (fallback) {
-                            const item = {
-                                ...fallback,
-                                id: Date.now() + i + Math.random(),
-                                stock: Math.floor(Math.random() * (fallback.stockRange[1] - fallback.stockRange[0] + 1)) + fallback.stockRange[0]
-                            };
-                            stock.push(item);
-                        }
                     }
                 }
             }

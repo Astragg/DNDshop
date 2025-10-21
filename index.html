@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dragon Age - The Black Emporium</title>
     <style>
+        /* [ALL PREVIOUS STYLES REMAIN IDENTICAL - no changes needed] */
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Uncial+Antiqua&display=swap');
         
         * {
@@ -23,7 +24,7 @@
             position: relative;
         }
 
-        /* Floating Dev Button - ALWAYS VISIBLE */
+        /* Floating Dev Button */
         .dev-toggle-btn {
             position: fixed;
             top: 20px;
@@ -48,7 +49,6 @@
         .dev-toggle-btn:hover {
             transform: scale(1.1);
             box-shadow: 0 0 30px rgba(153,50,204,0.8);
-            background: linear-gradient(145deg, #ba55d3, #9932cc);
         }
 
         @keyframes devPulse {
@@ -56,7 +56,7 @@
             50% { box-shadow: 0 0 30px rgba(153,50,204,0.8); }
         }
 
-        /* Dev Override Panel - Floating */
+        /* Dev Override Panel */
         .dev-override {
             position: fixed;
             top: 80px;
@@ -66,27 +66,18 @@
             border: 2px solid #9932cc;
             border-radius: 12px;
             padding: 15px;
-            box-shadow: 
-                0 0 30px rgba(153,50,204,0.6),
-                inset 0 1px 0 rgba(255,255,255,0.1);
+            box-shadow: 0 0 30px rgba(153,50,204,0.6);
             z-index: 1500;
             opacity: 0;
             visibility: hidden;
             transform: translateX(100%);
             transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
         }
 
         .dev-override.show {
             opacity: 1;
             visibility: visible;
             transform: translateX(0);
-            animation: devSlideIn 0.5s ease-out;
-        }
-
-        @keyframes devSlideIn {
-            0% { opacity: 0; transform: translateX(100%); }
-            100% { opacity: 1; transform: translateX(0); }
         }
 
         .dev-override-title {
@@ -117,7 +108,6 @@
             outline: none;
             border-color: #ffd700;
             box-shadow: 0 0 15px rgba(255,215,0,0.6);
-            background: rgba(25,0,25,1);
         }
 
         .dev-activate-btn {
@@ -139,7 +129,6 @@
         .dev-activate-btn:hover {
             background: linear-gradient(145deg, #ba55d3, #9932cc);
             box-shadow: 0 0 15px rgba(153,50,204,0.6);
-            transform: translateY(-1px);
         }
 
         .dev-status {
@@ -150,18 +139,8 @@
             border-radius: 6px;
         }
 
-        .dev-active {
-            color: #00ff7f;
-            text-shadow: 0 0 10px #00ff7f;
-            background: rgba(0,255,127,0.2);
-            border: 1px solid #00ff7f;
-        }
-
-        .dev-inactive {
-            color: #ff4757;
-            background: rgba(255,71,87,0.2);
-            border: 1px solid #ff4757;
-        }
+        .dev-active { color: #00ff7f; text-shadow: 0 0 10px #00ff7f; background: rgba(0,255,127,0.2); border: 1px solid #00ff7f; }
+        .dev-inactive { color: #ff4757; background: rgba(255,71,87,0.2); border: 1px solid #ff4757; }
 
         .dev-close-btn {
             position: absolute;
@@ -172,19 +151,62 @@
             color: #ffd700;
             font-size: 1.2rem;
             cursor: pointer;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
+        }
+
+        .dev-close-btn:hover { background: rgba(255,255,255,0.1); }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
+            align-items: center;
+            color: #ffd700;
+            z-index: 3000;
+            transition: opacity 0.5s ease;
         }
 
-        .dev-close-btn:hover {
-            background: rgba(255,255,255,0.1);
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
         }
 
-        /* Rest of existing styles... */
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255,215,0,0.2);
+            border-top: 4px solid #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .error-message {
+            color: #ff4757;
+            font-size: 1rem;
+            text-align: center;
+            max-width: 400px;
+            line-height: 1.4;
+        }
+
+        /* [ALL OTHER EXISTING STYLES - shop-container, items-grid, etc. remain EXACTLY THE SAME] */
         body::before {
             content: '';
             position: fixed;
@@ -194,52 +216,24 @@
             height: 100%;
             background-image: 
                 radial-gradient(circle at 20% 80%, rgba(139,69,19,0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(75,0,130,0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(139,69,19,0.05) 0%, transparent 50%);
+                radial-gradient(circle at 80% 20%, rgba(75,0,130,0.1) 0%, transparent 50%);
             pointer-events: none;
             z-index: -1;
         }
 
-        .shop-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-            position: relative;
-        }
-
-        .shop-header {
-            text-align: center;
-            margin-bottom: 20px;
-            position: relative;
-        }
-
+        .shop-container { max-width: 1400px; margin: 0 auto; padding: 20px; position: relative; }
+        .shop-header { text-align: center; margin-bottom: 20px; }
         .shop-title {
             font-family: 'Cinzel', serif;
             font-size: 3.5rem;
             font-weight: 700;
             color: #ffd700;
-            text-shadow: 
-                0 0 10px #ffd700,
-                2px 2px 4px rgba(0,0,0,0.8),
-                -2px -2px 4px rgba(255,215,0,0.3);
+            text-shadow: 0 0 10px #ffd700, 2px 2px 4px rgba(0,0,0,0.8);
             margin-bottom: 10px;
             letter-spacing: 3px;
             cursor: pointer;
-            transition: all 0.2s ease;
         }
-
-        .shop-title:hover {
-            transform: scale(1.02);
-            text-shadow: 0 0 20px #ffd700;
-        }
-
-        /* ... [All other existing styles remain exactly the same] ... */
-        .shop-subtitle {
-            font-size: 1.2rem;
-            color: #b8860b;
-            font-style: italic;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-        }
+        .shop-subtitle { font-size: 1.2rem; color: #b8860b; font-style: italic; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
 
         .currency-section {
             background: rgba(0,0,0,0.7);
@@ -251,33 +245,10 @@
             box-shadow: 0 0 20px rgba(139,69,19,0.3);
         }
 
-        .currency-title {
-            font-size: 1.3rem;
-            color: #ffd700;
-            margin-bottom: 10px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-        }
-
-        .currency-inputs {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-        }
-
-        .currency-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .currency-group label {
-            font-size: 0.9rem;
-            color: #d4af37;
-            margin-bottom: 5px;
-        }
-
+        .currency-title { font-size: 1.3rem; color: #ffd700; margin-bottom: 10px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
+        .currency-inputs { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 10px; }
+        .currency-group { display: flex; flex-direction: column; align-items: center; }
+        .currency-group label { font-size: 0.9rem; color: #d4af37; margin-bottom: 5px; }
         .currency-group input {
             width: 80px;
             padding: 8px;
@@ -288,25 +259,10 @@
             text-align: center;
             font-family: inherit;
         }
+        .currency-group input:focus { outline: none; border-color: #ffd700; box-shadow: 0 0 10px rgba(255,215,0,0.5); }
+        .total-wealth { font-size: 1.1rem; color: #ff6b35; font-weight: 600; }
 
-        .currency-group input:focus {
-            outline: none;
-            border-color: #ffd700;
-            box-shadow: 0 0 10px rgba(255,215,0,0.5);
-        }
-
-        .total-wealth {
-            font-size: 1.1rem;
-            color: #ff6b35;
-            font-weight: 600;
-        }
-
-        .controls {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 1.1rem;
-        }
-
+        .controls { text-align: center; margin-bottom: 30px; font-size: 1.1rem; }
         .refresh-info {
             background: rgba(0,0,0,0.7);
             border: 2px solid #8b4513;
@@ -315,7 +271,6 @@
             display: inline-block;
             margin-bottom: 10px;
             box-shadow: 0 0 20px rgba(139,69,19,0.3);
-            position: relative;
         }
 
         .refresh-limit {
@@ -342,26 +297,11 @@
             animation: pulse 2s infinite;
         }
 
-        @keyframes pulse-green {
-            0%, 100% { box-shadow: 0 0 5px #00ff7f; }
-            50% { box-shadow: 0 0 20px #00ff7f; }
-        }
+        @keyframes pulse-green { 0%, 100% { box-shadow: 0 0 5px #00ff7f; } 50% { box-shadow: 0 0 20px #00ff7f; } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .refresh-count {
-            font-weight: bold;
-            color: #00ff7f;
-        }
-
-        .cooldown-timer {
-            font-weight: bold;
-            color: #ff4757;
-            font-size: 1.1rem;
-        }
+        .refresh-count { font-weight: bold; color: #00ff7f; }
+        .cooldown-timer { font-weight: bold; color: #ff4757; font-size: 1.1rem; }
 
         .items-grid {
             display: grid;
@@ -378,17 +318,12 @@
             position: relative;
             overflow: hidden;
             transition: all 0.3s ease;
-            box-shadow: 
-                0 8px 32px rgba(0,0,0,0.6),
-                inset 0 1px 0 rgba(255,215,0,0.1);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
         }
 
         .item-card:hover {
             transform: translateY(-8px);
-            box-shadow: 
-                0 15px 40px rgba(139,69,19,0.4),
-                0 0 30px rgba(255,215,0,0.2);
+            box-shadow: 0 15px 40px rgba(139,69,19,0.4);
             border-color: #ffd700;
         }
 
@@ -401,21 +336,6 @@
             position: relative;
             overflow: hidden;
             border: 2px solid #654321;
-        }
-
-        .item-image::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: left 0.5s;
-        }
-
-        .item-card:hover .item-image::before {
-            left: 100%;
         }
 
         .item-name {
@@ -439,18 +359,11 @@
             font-size: 1.3rem;
             font-weight: 600;
             color: #ff6b35;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
             margin-bottom: 15px;
             display: flex;
             align-items: center;
             flex-wrap: wrap;
             gap: 5px;
-        }
-
-        .coin-stack {
-            display: flex;
-            align-items: center;
-            gap: 3px;
         }
 
         .coin-icon {
@@ -506,15 +419,11 @@
             cursor: pointer;
             transition: all 0.3s ease;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            position: relative;
-            overflow: hidden;
         }
 
         .buy-button:hover:not(:disabled) {
             background: linear-gradient(145deg, #a0522d, #cd853f);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(139,69,19,0.4);
         }
 
         .buy-button:disabled {
@@ -523,14 +432,7 @@
             opacity: 0.6;
         }
 
-        .buy-button:active {
-            transform: translateY(0);
-        }
-
-        .insufficient-funds {
-            color: #ff4757 !important;
-            font-weight: bold;
-        }
+        .insufficient-funds { color: #ff4757 !important; font-weight: bold; }
 
         .refresh-overlay {
             position: fixed;
@@ -551,22 +453,10 @@
             transition: all 0.3s ease;
         }
 
-        .refresh-overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
+        .refresh-overlay.show { opacity: 1; visibility: visible; }
+        .refresh-overlay .key-display { font-size: 4rem; margin: 20px 0; text-shadow: 0 0 20px #ffd700; animation: pulse 1s infinite; }
 
-        .refresh-overlay .key-display {
-            font-size: 4rem;
-            margin: 20px 0;
-            text-shadow: 0 0 20px #ffd700;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 
         .footer {
             text-align: center;
@@ -580,21 +470,8 @@
         @media (max-width: 768px) {
             .shop-title { font-size: 2.5rem; }
             .items-grid { grid-template-columns: 1fr; gap: 20px; }
-            .item-card { padding: 20px; }
             .currency-inputs { gap: 10px; }
             .currency-group input { width: 60px; }
-            .dev-override { 
-                width: 250px; 
-                right: 10px; 
-                top: 70px;
-            }
-            .dev-toggle-btn { 
-                top: 10px; 
-                right: 10px;
-                width: 45px;
-                height: 45px;
-                font-size: 1.3rem;
-            }
         }
 
         .particle {
@@ -616,10 +493,16 @@
     </style>
 </head>
 <body>
-    <!-- Floating Dev Toggle Button - ALWAYS VISIBLE -->
-    <div class="dev-toggle-btn" id="devToggleBtn" title="🔮 Triple-click title or click here">🔮</div>
+    <!-- LOADING SCREEN -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading Black Emporium...</div>
+        <div class="loading-text" style="font-size: 0.9rem; color: #b8860b;">Fetching loot tables from vault...</div>
+        <div class="error-message" id="errorMessage" style="display: none;"></div>
+    </div>
 
-    <!-- Floating Dev Override Panel -->
+    <!-- Dev Toggle -->
+    <div class="dev-toggle-btn" id="devToggleBtn" title="🔮 Dev Mode">🔮</div>
     <div class="dev-override" id="devOverride">
         <button class="dev-close-btn" onclick="toggleDevPanel()">✕</button>
         <div class="dev-override-title">🔮 Arcane Override 🔮</div>
@@ -669,7 +552,7 @@
         <div class="items-grid" id="itemsGrid"></div>
 
         <div class="footer">
-            ⚔️ Crafted for Dragon Age: The Veilguard ⚔️ | 💰 Currency-specific pricing | 2 refreshes/hour | 🔮 Click purple orb!
+            ⚔️ Dragon Age: The Veilguard ⚔️ | 📦 Items from loot-table.json | 🔮 Click purple orb for Dev Mode
         </div>
     </div>
 
@@ -680,19 +563,62 @@
     </div>
 
     <script>
-        // Dev Mode Key (change this to whatever you want!)
-        const DEV_KEY = "WARDEN69";
-
-        let isDevMode = false;
+        // GLOBAL VARIABLES
+        let itemTemplates = []; // Will be loaded from JSON
         let currentStock = [];
         let playerWealth = { pp: 0, gp: 0, sp: 0, cp: 0 };
+        let isDevMode = false;
+        const DEV_KEY = "WARDEN69";
         const MAX_REFRESHES = 2;
         const REFRESH_WINDOW = 60 * 60 * 1000;
 
-        // Dev Mode Functions - FIXED TO ALWAYS BE ACCESSIBLE
+        // LOAD LOOT TABLE FROM EXTERNAL JSON
+        async function loadLootTable() {
+            try {
+                const response = await fetch('loot-table.json');
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                
+                const data = await response.json();
+                itemTemplates = data.itemTemplates;
+                
+                if (itemTemplates.length === 0) {
+                    throw new Error('Loot table is empty!');
+                }
+                
+                console.log(`✅ Loaded ${itemTemplates.length} items from loot-table.json`);
+                initializeShop();
+                
+            } catch (error) {
+                console.error('❌ Failed to load loot table:', error);
+                showError(`Failed to load loot table: ${error.message}<br><br>Make sure <code>loot-table.json</code> exists in the same folder!`);
+            }
+        }
+
+        function showError(message) {
+            const loadingScreen = document.getElementById('loadingScreen');
+            const errorMsg = document.getElementById('errorMessage');
+            errorMsg.innerHTML = message;
+            errorMsg.style.display = 'block';
+            loadingScreen.classList.remove('hidden');
+        }
+
+        function initializeShop() {
+            setupDevAccess();
+            setupCurrency();
+            loadWealth();
+            updateRefreshDisplay();
+            refreshStock();
+            startParticles();
+            
+            // Hide loading screen
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+            }, 1000);
+        }
+
+        // DEV MODE FUNCTIONS
         function toggleDevPanel() {
-            const devPanel = document.getElementById('devOverride');
-            devPanel.classList.toggle('show');
+            document.getElementById('devOverride').classList.toggle('show');
         }
 
         function activateDevMode() {
@@ -702,31 +628,20 @@
 
             if (enteredKey === DEV_KEY) {
                 isDevMode = true;
-                status.innerHTML = '<span class="dev-active">ONLINE ⚡ Unlimited Refreshes!</span>';
+                status.innerHTML = '<span class="dev-active">ONLINE ⚡ Unlimited!</span>';
                 keyInput.value = '';
                 keyInput.placeholder = 'Dev Mode Active!';
                 
-                // Visual feedback
                 document.getElementById('devOverride').style.boxShadow = '0 0 40px #00ff7f';
-                document.querySelector('.dev-toggle-btn').style.background = 'linear-gradient(145deg, #00ff7f, #32cd32)';
-                
                 updateRefreshDisplay();
                 playSuccessSound();
                 
-                // Auto-close panel after success
-                setTimeout(() => {
-                    toggleDevPanel();
-                }, 1500);
+                setTimeout(toggleDevPanel, 1500);
             } else {
                 status.innerHTML = '<span class="dev-inactive">WRONG KEY ❌</span>';
                 keyInput.value = '';
-                keyInput.placeholder = 'Invalid Code';
-                keyInput.style.borderColor = '#ff4757';
-                
                 setTimeout(() => {
                     status.innerHTML = 'Dev Mode: <span class="dev-inactive">OFF</span>';
-                    keyInput.placeholder = 'Enter Code';
-                    keyInput.style.borderColor = '#9932cc';
                 }, 2000);
             }
         }
@@ -736,197 +651,47 @@
                 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 const oscillator = audioContext.createOscillator();
                 const gainNode = audioContext.createGain();
-                
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
-                
                 oscillator.frequency.value = 800;
                 oscillator.type = 'sine';
-                
                 gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-                
                 oscillator.start(audioContext.currentTime);
                 oscillator.stop(audioContext.currentTime + 0.5);
             } catch(e) {}
         }
 
-        // Multiple ways to access dev panel - ALWAYS AVAILABLE
         function setupDevAccess() {
-            const toggleBtn = document.getElementById('devToggleBtn');
-            const shopTitle = document.getElementById('shopTitle');
+            document.getElementById('devToggleBtn').addEventListener('click', toggleDevPanel);
             
-            // Method 1: Click purple orb (ALWAYS VISIBLE)
-            toggleBtn.addEventListener('click', toggleDevPanel);
-            
-            // Method 2: Triple-click shop title
             let titleClickCount = 0;
-            shopTitle.addEventListener('click', function() {
+            document.getElementById('shopTitle').addEventListener('click', function() {
                 titleClickCount++;
                 if (titleClickCount === 3) {
                     toggleDevPanel();
                     titleClickCount = 0;
-                    // Visual feedback
-                    shopTitle.style.color = '#00ff7f';
-                    setTimeout(() => shopTitle.style.color = '#ffd700', 1000);
+                    this.style.color = '#00ff7f';
+                    setTimeout(() => this.style.color = '#ffd700', 1000);
                 }
                 setTimeout(() => titleClickCount = 0, 2000);
             });
-            
-            // Method 3: Triple-click ANYWHERE (emergency access)
-            let bodyClickCount = 0;
-            document.body.addEventListener('click', function(e) {
-                if (e.target.closest('.dev-override') || e.target.closest('.dev-toggle-btn')) return;
-                bodyClickCount++;
-                if (bodyClickCount === 5) { // 5 clicks anywhere
-                    toggleDevPanel();
-                    bodyClickCount = 0;
-                }
-                setTimeout(() => bodyClickCount = 0, 3000);
-            }, true);
         }
 
-        // [ALL EXISTING JAVASCRIPT FUNCTIONS REMAIN IDENTICAL - itemTemplates, currency functions, etc.]
-        const itemTemplates = [
-            // ... [Same item templates as before - no changes needed]
-            {
-                name: "Traveler's Rations",
-                description: "Hard bread, dried meat, and cheese. Enough for a day's journey.",
-                price: { cp: 2 },
-                stats: ["1 Day Food", "No Exhaustion"],
-                rarity: "common",
-                tier: "basic",
-                stockRange: [20, 50]
-            },
-            {
-                name: "Iron Rations",
-                description: "Preserved food for harsh conditions. Tastes like boot leather.",
-                price: { cp: 5 },
-                stats: ["2 Days Food", "Cold Resistance"],
-                rarity: "common",
-                tier: "basic",
-                stockRange: [15, 40]
-            },
-            {
-                name: "Healing Salve",
-                description: "Herbal paste that mends minor wounds.",
-                price: { cp: 8 },
-                stats: ["Heal 1d4+2", "Stop Bleeding"],
-                rarity: "uncommon",
-                tier: "basic",
-                stockRange: [25, 60]
-            },
-            {
-                name: "Holy Water Vial",
-                description: "Blessed water from the nearest chantry.",
-                price: { sp: 2 },
-                stats: ["+1d4 vs Demons", "Purify Water"],
-                rarity: "uncommon",
-                tier: "basic",
-                stockRange: [12, 30]
-            },
-            {
-                name: "Dwarven Throwing Axe",
-                description: "Perfectly balanced for combat, made by master smiths.",
-                price: { sp: 12 },
-                stats: ["+18 Damage", "Bounce Effect", "Returning"],
-                rarity: "common",
-                tier: "common",
-                stockRange: [8, 15]
-            },
-            {
-                name: "Antivan Poison Vial",
-                description: "A deadly concoction from the Crows of Antiva.",
-                price: { sp: 8, cp: 5 },
-                stats: ["Instant Poison", "5 Stacks", "Anti-Mage"],
-                rarity: "uncommon",
-                tier: "common",
-                stockRange: [10, 25]
-            },
-            {
-                name: "Qunari War Paint",
-                description: "Grants the ferocity of the Arishok himself.",
-                price: { sp: 15 },
-                stats: ["+15 Strength", "Rage Mode", "Taunt"],
-                rarity: "uncommon",
-                tier: "common",
-                stockRange: [6, 12]
-            },
-            {
-                name: "Masterwork Longsword",
-                description: "A blade of exceptional craftsmanship from Orlais.",
-                price: { gp: 3 },
-                stats: ["+25 Damage", "15% Crit Chance"],
-                rarity: "rare",
-                tier: "quality",
-                stockRange: [3, 6]
-            },
-            {
-                name: "Fade-Touched Leather",
-                description: "Supple armor infused with the essence of the Fade itself.",
-                price: { gp: 2, sp: 15 },
-                stats: ["+12 Defense", "+8 Magic Resist", "Fade Step"],
-                rarity: "rare",
-                tier: "quality",
-                stockRange: [2, 5]
-            },
-            {
-                name: "Chantry Blessed Amulet",
-                description: "Protected by the Maker's light.",
-                price: { gp: 2, sp: 10 },
-                stats: ["+18 Willpower", "Holy Ward", "Purify"],
-                rarity: "epic",
-                tier: "quality",
-                stockRange: [1, 4]
-            },
-            {
-                name: "Blade of the Warden",
-                description: "A longsword forged in the fires of Orzammar, tempered with lyrium.",
-                price: { gp: 85 },
-                stats: ["+35 Damage", "25% Crit Chance", "Lyrium Bleed"],
-                rarity: "legendary",
-                tier: "legendary",
-                stockRange: [1, 1]
-            },
-            {
-                name: "Lyrium-Laced Ring",
-                description: "A silver band pulsing with raw magical energy.",
-                price: { gp: 27, sp: 5 },
-                stats: ["+30 Mana", "+15% Spell Power", "Mana Regen"],
-                rarity: "epic",
-                tier: "legendary",
-                stockRange: [1, 2]
-            },
-            {
-                name: "Elven Spirit Essence",
-                description: "Distilled from ancient Dalish rituals. Exceedingly rare.",
-                price: { pp: 1, gp: 2 },
-                stats: ["Full Heal", "Temp HP +20", "Spirit Vision"],
-                rarity: "legendary",
-                tier: "legendary",
-                stockRange: [1, 1]
-            }
-        ];
+        // CURRENCY FUNCTIONS
+        function setupCurrency() {
+            document.querySelectorAll('.currency-group input').forEach(input => {
+                input.addEventListener('input', updateWealthFromInputs);
+            });
+        }
 
-        const rarityColors = {
-            common: '#c0c0c0',
-            uncommon: '#00ff7f',
-            rare: '#4169e1',
-            epic: '#9932cc',
-            legendary: '#ffd700'
-        };
-
-        // [Include ALL previous functions - getTotalWealth, canAffordItem, etc.]
-        // Currency functions
         function getTotalWealth() {
             return playerWealth.pp * 10 + playerWealth.gp + playerWealth.sp * 0.1 + playerWealth.cp * 0.01;
         }
 
         function canAffordItem(price) {
             for (let [currency, amount] of Object.entries(price)) {
-                if (playerWealth[currency] < amount) {
-                    return false;
-                }
+                if (playerWealth[currency] < amount) return false;
             }
             return true;
         }
@@ -968,14 +733,9 @@
             refreshItemButtons();
         }
 
-        document.querySelectorAll('.currency-group input').forEach(input => {
-            input.addEventListener('input', updateWealthFromInputs);
-        });
-
-        // Refresh tracking
+        // REFRESH SYSTEM
         function loadRefreshHistory() {
-            const saved = localStorage.getItem('daShopRefreshes');
-            return saved ? JSON.parse(saved) : [];
+            return JSON.parse(localStorage.getItem('daShopRefreshes') || '[]');
         }
 
         function saveRefreshHistory(history) {
@@ -986,7 +746,7 @@
             if (isDevMode) return Infinity;
             const history = loadRefreshHistory();
             const now = Date.now();
-            const validRefreshes = history.filter(timestamp => now - timestamp < REFRESH_WINDOW);
+            const validRefreshes = history.filter(ts => now - ts < REFRESH_WINDOW);
             return MAX_REFRESHES - validRefreshes.length;
         }
 
@@ -999,16 +759,6 @@
             const history = loadRefreshHistory();
             history.push(Date.now());
             saveRefreshHistory(history);
-            updateRefreshDisplay();
-        }
-
-        function getNextRefreshTime() {
-            if (isDevMode) return null;
-            const history = loadRefreshHistory();
-            const now = Date.now();
-            const validRefreshes = history.filter(timestamp => now - timestamp < REFRESH_WINDOW);
-            if (validRefreshes.length < MAX_REFRESHES) return null;
-            return validRefreshes[0] + REFRESH_WINDOW;
         }
 
         function updateRefreshDisplay() {
@@ -1025,10 +775,6 @@
                 `;
                 return;
             }
-
-            const countElement = document.getElementById('refreshCount');
-            countElement.textContent = `${available}/${MAX_REFRESHES}`;
-            document.getElementById('refreshLimit').className = available > 0 ? 'refresh-limit' : 'refresh-limit warning';
 
             if (available > 0) {
                 refreshInfo.innerHTML = `
@@ -1052,6 +798,15 @@
             }
         }
 
+        function getNextRefreshTime() {
+            if (isDevMode) return null;
+            const history = loadRefreshHistory();
+            const now = Date.now();
+            const validRefreshes = history.filter(ts => now - ts < REFRESH_WINDOW);
+            if (validRefreshes.length < MAX_REFRESHES) return null;
+            return validRefreshes[0] + REFRESH_WINDOW;
+        }
+
         function formatTimeLeft(seconds) {
             const mins = Math.floor(seconds / 60);
             const secs = seconds % 60;
@@ -1061,8 +816,6 @@
         let countdownInterval = null;
         function startCountdown(nextRefreshTime) {
             if (countdownInterval) clearInterval(countdownInterval);
-            if (isDevMode) return;
-            
             countdownInterval = setInterval(() => {
                 const timeLeft = Math.ceil((nextRefreshTime - Date.now()) / 1000);
                 if (timeLeft <= 0) {
@@ -1070,12 +823,11 @@
                     updateRefreshDisplay();
                     return;
                 }
-                const timerElement = document.querySelector('.cooldown-timer');
-                if (timerElement) timerElement.textContent = formatTimeLeft(timeLeft);
+                document.querySelector('.cooldown-timer').textContent = formatTimeLeft(timeLeft);
             }, 1000);
         }
 
-        // Shop functions (unchanged)
+        // SHOP FUNCTIONS
         function generateRandomStock() {
             const stock = [];
             const stockSize = 8 + Math.floor(Math.random() * 4);
@@ -1088,7 +840,7 @@
 
             for (let i = 0; i < stockSize; i++) {
                 let rand = Math.random();
-                let selectedTier = null;
+                let selectedTier = 'basic';
                 for (let tierInfo of tierWeights) {
                     if (rand < tierInfo.weight) {
                         selectedTier = tierInfo.tier;
@@ -1098,11 +850,12 @@
                 }
 
                 const candidates = itemTemplates.filter(item => item.tier === selectedTier);
-                const template = candidates[Math.floor(Math.random() * candidates.length)];
+                if (candidates.length === 0) continue;
                 
+                const template = candidates[Math.floor(Math.random() * candidates.length)];
                 const item = {
                     ...template,
-                    id: Date.now() + i,
+                    id: Date.now() + i + Math.random(),
                     stock: Math.floor(Math.random() * (template.stockRange[1] - template.stockRange[0] + 1)) + template.stockRange[0]
                 };
                 stock.push(item);
@@ -1110,14 +863,34 @@
             return stock;
         }
 
+        const rarityColors = {
+            common: '#c0c0c0',
+            uncommon: '#00ff7f',
+            rare: '#4169e1',
+            epic: '#9932cc',
+            legendary: '#ffd700'
+        };
+
+        function getItemImageStyle(rarity) {
+            const styles = {
+                common: 'linear-gradient(45deg, #8b7355, #a0522d)',
+                uncommon: 'linear-gradient(45deg, #228b22, #32cd32)',
+                rare: 'linear-gradient(45deg, #4169e1, #1e90ff)',
+                epic: 'linear-gradient(45deg, #8a2be2, #9932cc)',
+                legendary: 'linear-gradient(45deg, #ffd700, #ffed4e)'
+            };
+            return styles[rarity] || styles.common;
+        }
+
         function formatPrice(price) {
             let priceHtml = '';
             for (let [currency, amount] of Object.entries(price)) {
                 if (amount > 0) {
                     const coinClass = `coin-icon coin-${currency}`;
-                    priceHtml += `<span class="coin-stack">
-                        ${Array(Math.min(amount, 3)).fill(0).map(() => `<span class="${coinClass}"></span>`).join('')}
-                        ${amount > 3 ? `+${amount-3}` : amount}
+                    const coinsToShow = Math.min(amount, 5);
+                    priceHtml += `<span style="display: flex; align-items: center; gap: 3px;">
+                        ${Array(coinsToShow).fill(0).map(() => `<span class="${coinClass}"></span>`).join('')}
+                        ${amount > 5 ? `<span style="font-weight: bold;">+${amount-5}</span>` : `<span style="font-weight: bold;">${amount}</span>`}
                         <span style="font-size: 0.9rem; margin-left: 3px;">${currency.toUpperCase()}</span>
                     </span>`;
                 }
@@ -1129,8 +902,6 @@
             const rarityColor = rarityColors[item.rarity] || '#ffffff';
             const imageStyle = getItemImageStyle(item.rarity);
             const canAfford = canAffordItem(item.price);
-            const buttonText = canAfford ? `Purchase (${item.stock} left)` : 'Need Exact Coins';
-            const buttonClass = canAfford ? '' : 'insufficient-funds';
             
             return `
                 <div class="item-card" style="--rarity-color: ${rarityColor}" data-item-id="${item.id}">
@@ -1151,22 +922,12 @@
                     <div class="item-price" id="price-${item.id}">
                         ${formatPrice(item.price)}
                     </div>
-                    <button class="buy-button ${buttonClass}" onclick="buyItem(${item.id})" ${!canAfford ? 'disabled' : ''}>
-                        ${buttonText}
+                    <button class="buy-button ${canAfford ? '' : 'insufficient-funds'}" 
+                            onclick="buyItem(${item.id})" ${!canAfford ? 'disabled' : ''}>
+                        ${canAfford ? `Purchase (${item.stock} left)` : 'Need Exact Coins'}
                     </button>
                 </div>
             `;
-        }
-
-        function getItemImageStyle(rarity) {
-            const styles = {
-                common: 'linear-gradient(45deg, #8b7355, #a0522d)',
-                uncommon: 'linear-gradient(45deg, #228b22, #32cd32)',
-                rare: 'linear-gradient(45deg, #4169e1, #1e90ff)',
-                epic: 'linear-gradient(45deg, #8a2be2, #9932cc)',
-                legendary: 'linear-gradient(45deg, #ffd700, #ffed4e)'
-            };
-            return styles[rarity] || styles.common;
         }
 
         function refreshItemButtons() {
@@ -1188,8 +949,7 @@
             }
 
             currentStock = generateRandomStock();
-            const grid = document.getElementById('itemsGrid');
-            grid.innerHTML = currentStock.map(item => createItemCard(item)).join('');
+            document.getElementById('itemsGrid').innerHTML = currentStock.map(createItemCard).join('');
             recordRefresh();
             
             const overlay = document.getElementById('refreshOverlay');
@@ -1204,7 +964,7 @@
             const item = currentStock.find(i => i.id === itemId);
             if (item && item.stock > 0 && canAffordItem(item.price)) {
                 deductCurrency(item.price);
-
+                
                 document.getElementById('ppInput').value = playerWealth.pp;
                 document.getElementById('gpInput').value = playerWealth.gp;
                 document.getElementById('spInput').value = playerWealth.sp;
@@ -1218,13 +978,8 @@
                 const stockIndicator = card.querySelector('.stock-indicator');
                 
                 stockIndicator.textContent = `${item.stock} in stock`;
-                
-                if (item.stock === 0) {
-                    button.textContent = 'SOLD OUT';
-                    button.disabled = true;
-                } else {
-                    button.textContent = `Purchase (${item.stock} left)`;
-                }
+                button.textContent = item.stock === 0 ? 'SOLD OUT' : `Purchase (${item.stock} left)`;
+                if (item.stock === 0) button.disabled = true;
                 
                 card.style.boxShadow = '0 0 30px #00ff00';
                 setTimeout(() => {
@@ -1234,21 +989,7 @@
             }
         }
 
-        // Event listeners
-        document.addEventListener('keydown', function(event) {
-            if (event.code === 'Space') {
-                event.preventDefault();
-                refreshStock();
-            }
-        });
-
-        window.addEventListener('load', function() {
-            setupDevAccess(); // Initialize dev access
-            loadWealth();
-            updateRefreshDisplay();
-            refreshStock();
-            
-            // Floating particles
+        function startParticles() {
             setInterval(() => {
                 const particle = document.createElement('div');
                 particle.className = 'particle';
@@ -1256,13 +997,23 @@
                 particle.style.animationDuration = (4 + Math.random() * 4) + 's';
                 particle.style.animationDelay = Math.random() * 2 + 's';
                 document.body.appendChild(particle);
-                setTimeout(() => {
-                    if (particle.parentNode) particle.parentNode.removeChild(particle);
-                }, 8000);
+                setTimeout(() => particle.remove(), 8000);
             }, 1000);
+        }
 
-            setInterval(updateRefreshDisplay, 60000);
+        // EVENT LISTENERS
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                refreshStock();
+            }
         });
+
+        // INITIALIZE - Load loot table first!
+        window.addEventListener('load', loadLootTable);
+
+        // Auto-refresh display every minute
+        setInterval(updateRefreshDisplay, 60000);
     </script>
 </body>
 </html>

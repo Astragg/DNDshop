@@ -146,6 +146,35 @@
             display: inline-block;
             margin-bottom: 10px;
             box-shadow: 0 0 20px rgba(139,69,19,0.3);
+            position: relative;
+        }
+
+        .refresh-limit {
+            background: rgba(139,69,19,0.3);
+            border: 1px solid #ffd700;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-top: 10px;
+            font-size: 1rem;
+            color: #ffd700;
+        }
+
+        .refresh-limit.warning {
+            background: rgba(255,71,87,0.3);
+            border-color: #ff4757;
+            color: #ff4757;
+            animation: pulse 2s infinite;
+        }
+
+        .refresh-count {
+            font-weight: bold;
+            color: #00ff7f;
+        }
+
+        .cooldown-timer {
+            font-weight: bold;
+            color: #ff4757;
+            font-size: 1.1rem;
         }
 
         .items-grid {
@@ -424,8 +453,11 @@
         </div>
 
         <div class="controls">
-            <div class="refresh-info">
+            <div class="refresh-info" id="refreshInfo">
                 💰 Press <strong>SPACEBAR</strong> to refresh stock 💰
+                <div class="refresh-limit" id="refreshLimit">
+                    <span id="refreshCount">2/2</span> refreshes remaining this hour
+                </div>
             </div>
         </div>
 
@@ -434,7 +466,7 @@
         </div>
 
         <div class="footer">
-            ⚔️ Crafted for Dragon Age: The Veilguard ⚔️ | 💰 Manage your coin wisely!
+            ⚔️ Crafted for Dragon Age: The Veilguard ⚔️ | 💰 2 refreshes/hour limit | Manage your coin wisely!
         </div>
     </div>
 
@@ -516,6 +548,107 @@
 
         let currentStock = [];
         let playerWealth = { pp: 0, gp: 0, sp: 0, cp: 0 };
+        const MAX_REFRESHES = 2;
+        const REFRESH_WINDOW = 60 * 60 * 1000; // 1 hour in milliseconds
+
+        // Refresh tracking functions
+        function loadRefreshHistory() {
+            const saved = localStorage.getItem('daShopRefreshes');
+            return saved ? JSON.parse(saved) : [];
+        }
+
+        function saveRefreshHistory(history) {
+            localStorage.setItem('daShopRefreshes', JSON.stringify(history));
+        }
+
+        function getAvailableRefreshes() {
+            const history = loadRefreshHistory();
+            const now = Date.now();
+            const validRefreshes = history.filter(timestamp => now - timestamp < REFRESH_WINDOW);
+            return MAX_REFRESHES - validRefreshes.length;
+        }
+
+        function canRefresh() {
+            return getAvailableRefreshes() > 0;
+        }
+
+        function recordRefresh() {
+            const history = loadRefreshHistory();
+            history.push(Date.now());
+            saveRefreshHistory(history);
+            updateRefreshDisplay();
+        }
+
+        function getNextRefreshTime() {
+            const history = loadRefreshHistory();
+            const now = Date.now();
+            const validRefreshes = history.filter(timestamp => now - timestamp < REFRESH_WINDOW);
+            
+            if (validRefreshes.length < MAX_REFRESHES) {
+                return null; // Can refresh immediately
+            }
+            
+            // Find when the oldest refresh expires
+            const oldestValid = validRefreshes[0];
+            return oldestValid + REFRESH_WINDOW;
+        }
+
+        function updateRefreshDisplay() {
+            const available = getAvailableRefreshes();
+            const countElement = document.getElementById('refreshCount');
+            const limitElement = document.getElementById('refreshLimit');
+            const refreshInfo = document.getElementById('refreshInfo');
+
+            countElement.textContent = `${available}/${MAX_REFRESHES}`;
+            countElement.parentElement.className = available > 0 ? 'refresh-limit' : 'refresh-limit warning';
+
+            if (available > 0) {
+                refreshInfo.innerHTML = `
+                    💰 Press <strong>SPACEBAR</strong> to refresh stock 💰
+                    <div class="refresh-limit">
+                        <span id="refreshCount">${available}/${MAX_REFRESHES}</span> refreshes remaining this hour
+                    </div>
+                `;
+            } else {
+                const nextRefresh = getNextRefreshTime();
+                if (nextRefresh) {
+                    const timeLeft = Math.ceil((nextRefresh - Date.now()) / 1000);
+                    refreshInfo.innerHTML = `
+                        ⏳ <strong>Refresh Limit Reached</strong> ⏳
+                        <div class="refresh-limit warning">
+                            <span class="cooldown-timer">${formatTimeLeft(timeLeft)} until next refresh</span>
+                        </div>
+                    `;
+                    // Start countdown
+                    startCountdown(nextRefresh);
+                }
+            }
+        }
+
+        function formatTimeLeft(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}m ${secs}s`;
+        }
+
+        let countdownInterval = null;
+        function startCountdown(nextRefreshTime) {
+            if (countdownInterval) clearInterval(countdownInterval);
+            
+            countdownInterval = setInterval(() => {
+                const timeLeft = Math.ceil((nextRefreshTime - Date.now()) / 1000);
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    updateRefreshDisplay();
+                    return;
+                }
+                
+                const timerElement = document.querySelector('.cooldown-timer');
+                if (timerElement) {
+                    timerElement.textContent = formatTimeLeft(timeLeft);
+                }
+            }, 1000);
+        }
 
         // Load/save wealth to localStorage
         function loadWealth() {
@@ -621,15 +754,24 @@
         }
 
         function refreshStock() {
+            if (!canRefresh()) {
+                updateRefreshDisplay();
+                return;
+            }
+
             currentStock = generateRandomStock();
             const grid = document.getElementById('itemsGrid');
             grid.innerHTML = currentStock.map(item => createItemCard(item)).join('');
+            
+            // Record the refresh
+            recordRefresh();
             
             // Show refresh animation
             const overlay = document.getElementById('refreshOverlay');
             overlay.classList.add('show');
             setTimeout(() => {
                 overlay.classList.remove('show');
+                updateRefreshDisplay();
             }, 1500);
         }
 
@@ -724,6 +866,7 @@
         // Initialize shop
         window.addEventListener('load', function() {
             loadWealth();
+            updateRefreshDisplay();
             refreshStock();
             
             // Create floating particles
@@ -741,6 +884,9 @@
                     }
                 }, 8000);
             }, 1000);
+
+            // Update refresh display every minute to clean up old timestamps
+            setInterval(updateRefreshDisplay, 60000);
         });
     </script>
 </body>

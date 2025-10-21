@@ -8,15 +8,17 @@
       "rarity": "common",
       "tier": "basic",
       "stockRange": [20, 50]
+      "spawnChance": 0.15
     },
     {
       "name": "Bobs Left Toe",
       "description": "Preserved food for harsh conditions. Tastes like boot leather.",
       "price": { "cp": 5 },
-      "stats": ["2 Days Food", "Cold Resistance"],
+      "stats": ["1 Day Food", "Cold Resistance", "Heals 1HP if eaten outside camp"],
       "rarity": "common",
       "tier": "basic",
       "stockRange": [15, 40]
+      "spawnChance": 0.15
     },
     {
       "name": "Healing Salve",
@@ -26,6 +28,7 @@
       "rarity": "uncommon",
       "tier": "basic",
       "stockRange": [25, 60]
+      "spawnChance": 0.15
     },
     {
       "name": "Holy Water Vial",
@@ -35,6 +38,7 @@
       "rarity": "uncommon",
       "tier": "basic",
       "stockRange": [12, 30]
+      "spawnChance": 0.15
     },
     {
       "name": "Dwarven Spear",
@@ -44,6 +48,7 @@
       "rarity": "common",
       "tier": "common",
       "stockRange": [8, 15]
+      "spawnChance": 0.15
     },
     {
       "name": "Antivan Poison Vial",
@@ -53,71 +58,80 @@
       "rarity": "uncommon",
       "tier": "common",
       "stockRange": [10, 25]
+      "spawnChance": 0.15
     },
     {
       "name": "Qunari War Paint",
       "description": "Grants the ferocity of the Arishok himself.",
       "price": { "sp": 15 },
-      "stats": ["+1 AC"],
+      "stats": ["+1 AC while wearing"],
       "rarity": "uncommon",
       "tier": "common",
       "stockRange": [6, 12]
+      "spawnChance": 0.15
     },
     {
       "name": "Masterwork Longsword",
       "description": "A blade of exceptional craftsmanship from Orlais.",
       "price": { "gp": 3 },
-      "stats": ["+25 Damage", "15% Crit Chance"],
+      "stats": ["1d8+4 Slashing, One handed"],
       "rarity": "rare",
       "tier": "quality",
       "stockRange": [3, 6]
+      "spawnChance": 0.15
     },
     {
-      "name": "Fade-Touched Leather",
+      "name": "Fade-Touched Leather Armour",
       "description": "Supple armor infused with the essence of the Fade itself.",
       "price": { "gp": 2, "sp": 15 },
-      "stats": ["+12 Defense", "+8 Magic Resist", "Fade Step"],
+      "stats": ["AC 13 +1d6 reduction to demon attacks"],
       "rarity": "rare",
       "tier": "quality",
-      "stockRange": [2, 5]
+      "stockRange": [1, 1]
+      "spawnChance": 0.10
     },
     {
       "name": "Chantry Blessed Amulet",
       "description": "Protected by the Maker's light.",
       "price": { "gp": 2, "sp": 10 },
-      "stats": ["+18 Willpower", "Holy Ward", "Purify"],
+      "stats": ["+2 AC while wearing"],
       "rarity": "epic",
       "tier": "quality",
-      "stockRange": [1, 4]
+      "stockRange": [1, 1]
+      "spawnChance": 0.05
     },
     {
       "name": "Blade of the Warden",
       "description": "A longsword forged in the fires of Orzammar, tempered with lyrium.",
       "price": { "gp": 85 },
-      "stats": ["+35 Damage", "25% Crit Chance", "Lyrium Bleed"],
+      "stats": ["2d6 Slashing +1d8 Slashing against Darkspawn. One Handed"],
       "rarity": "legendary",
       "tier": "legendary",
       "stockRange": [1, 1]
+      "spawnChance": 0.005
     },
     {
       "name": "Lyrium-Laced Ring",
       "description": "A silver band pulsing with raw magical energy.",
       "price": { "gp": 27, "sp": 5 },
-      "stats": ["+30 Mana", "+15% Spell Power", "Mana Regen"],
+      "stats": ["1d6 Resistance to magic"],
       "rarity": "epic",
       "tier": "legendary",
       "stockRange": [1, 2]
+      "spawnChance": 0.05
     },
     {
       "name": "Elven Spirit Essence",
       "description": "Distilled from ancient Dalish rituals. Exceedingly rare.",
-      "price": { "pp": 1, "gp": 2 },
-      "stats": ["Full Heal", "Temp HP +20", "Spirit Vision"],
+      "price": { "pp": 1, "gp": 7 },
+      "stats": ["Full Heal"],
       "rarity": "legendary",
       "tier": "legendary",
-      "stockRange": [1, 1]
+      "stockRange": [1, 3]
+      "spawnChance": 0.10
     }
   ]
 }
+
 
 

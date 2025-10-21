@@ -828,40 +828,47 @@
         }
 
         // SHOP FUNCTIONS
-        function generateRandomStock() {
-            const stock = [];
-            const stockSize = 8 + Math.floor(Math.random() * 4);
-            const tierWeights = [
-                { tier: 'basic', weight: 0.4 },
-                { tier: 'common', weight: 0.3 },
-                { tier: 'quality', weight: 0.2 },
-                { tier: 'legendary', weight: 0.1 }
-            ];
-
-            for (let i = 0; i < stockSize; i++) {
-                let rand = Math.random();
-                let selectedTier = 'basic';
-                for (let tierInfo of tierWeights) {
-                    if (rand < tierInfo.weight) {
-                        selectedTier = tierInfo.tier;
-                        break;
-                    }
-                    rand -= tierInfo.weight;
-                }
-
-                const candidates = itemTemplates.filter(item => item.tier === selectedTier);
-                if (candidates.length === 0) continue;
-                
-                const template = candidates[Math.floor(Math.random() * candidates.length)];
-                const item = {
-                    ...template,
-                    id: Date.now() + i + Math.random(),
-                    stock: Math.floor(Math.random() * (template.stockRange[1] - template.stockRange[0] + 1)) + template.stockRange[0]
-                };
-                stock.push(item);
+// 🔥 NEW: Individual Spawn Chance System!
+function generateRandomStock() {
+    const stock = [];
+    const stockSize = 8 + Math.floor(Math.random() * 4); // 8-11 items
+    
+    for (let i = 0; i < stockSize; i++) {
+        // 🎲 ROLL FOR EACH ITEM INDIVIDUALLY
+        const roll = Math.random();
+        let selectedItem = null;
+        
+        // Try each item based on its spawnChance (highest first)
+        for (let itemTemplate of itemTemplates) {
+            if (roll <= itemTemplate.spawnChance) {
+                selectedItem = itemTemplate;
+                break;
             }
-            return stock;
         }
+        
+        // If no item matched spawnChance, pick a "common" fallback
+        if (!selectedItem) {
+            const commons = itemTemplates.filter(item => item.rarity === 'common');
+            if (commons.length > 0) {
+                selectedItem = commons[Math.floor(Math.random() * commons.length)];
+            }
+        }
+        
+        if (selectedItem) {
+            const item = {
+                ...selectedItem,
+                id: Date.now() + i + Math.random(),
+                stock: Math.floor(Math.random() * (selectedItem.stockRange[1] - selectedItem.stockRange[0] + 1)) + selectedItem.stockRange[0]
+            };
+            stock.push(item);
+        }
+    }
+    
+    console.log(`🎲 Generated stock: ${stock.length} items`);
+    console.log(`📊 Rarities: ${stock.map(item => item.rarity).join(', ')}`);
+    
+    return stock;
+}
 
         const rarityColors = {
             common: '#c0c0c0',

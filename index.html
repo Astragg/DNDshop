@@ -634,7 +634,7 @@
 
     <script>
         // VERSION WATERMARK SYSTEM
-        const SHOP_VERSION = "v2.1.0";
+        const SHOP_VERSION = "v2";
         const STORAGE_KEY = 'shopVersion';
 
         // WEBHOOK CONFIG
@@ -652,7 +652,7 @@
 
         // WEBHOOK PURCHASE NOTIFICATION
         async function sendPurchaseToWebhook(item, quantity) {
-            if (!playerName) return; // Skip if no name
+            if (!playerName) return;
             const totalCost = (item.price.pp || 0) * 10 + (item.price.gp || 0) + (item.price.sp || 0) * 0.1 + (item.price.cp || 0) * 0.01;
             const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
             const payload = {
@@ -999,34 +999,69 @@
             }, 1000);
         }
 
-        // SHOP FUNCTIONS
+        // SHOP FUNCTIONS - NEW SPAWN SYSTEM
         function generateRandomStock() {
             const stock = [];
-            const stockSize = 8 + Math.floor(Math.random() * 4);
-            for (let i = 0; i < stockSize; i++) {
-                const roll = Math.random();
-                let selectedItem = null;
-                for (let itemTemplate of itemTemplates) {
-                    if (roll <= itemTemplate.spawnChance) {
-                        selectedItem = itemTemplate;
-                        break;
+            const stockSize = 8 + Math.floor(Math.random() * 4); // 8-11 items
+            const commons = itemTemplates.filter(item => item.rarity === 'common');
+            const nonCommons = itemTemplates.filter(item => item.rarity !== 'common');
+
+            // Step 1: Guarantee 5 common items
+            const shuffledCommons = commons.sort(() => Math.random() - 0.5);
+            const selectedCommons = shuffledCommons.slice(0, Math.min(5, commons.length));
+            selectedCommons.forEach(itemTemplate => {
+                const item = {
+                    ...itemTemplate,
+                    id: Date.now() + Math.random(),
+                    stock: Math.floor(Math.random() * (itemTemplate.stockRange[1] - itemTemplate.stockRange[0] + 1)) + itemTemplate.stockRange[0]
+                };
+                stock.push(item);
+            });
+
+            // Step 2: Fill remaining slots (3-6) with weighted selection favoring rarer items
+            const remainingSlots = stockSize - stock.length;
+            if (remainingSlots > 0 && nonCommons.length > 0) {
+                // Calculate inverse weights: lower spawnChance = higher weight
+                const maxChance = Math.max(...nonCommons.map(item => item.spawnChance));
+                const weights = nonCommons.map(item => maxChance / item.spawnChance);
+                const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+
+                for (let i = 0; i < remainingSlots; i++) {
+                    const roll = Math.random() * totalWeight;
+                    let cumulativeWeight = 0;
+                    let selectedItem = null;
+
+                    for (let j = 0; j < nonCommons.length; j++) {
+                        cumulativeWeight += weights[j];
+                        if (roll <= cumulativeWeight) {
+                            selectedItem = nonCommons[j];
+                            break;
+                        }
                     }
-                }
-                if (!selectedItem) {
-                    const commons = itemTemplates.filter(item => item.rarity === 'common');
-                    if (commons.length > 0) {
-                        selectedItem = commons[Math.floor(Math.random() * commons.length)];
+
+                    if (selectedItem) {
+                        const item = {
+                            ...selectedItem,
+                            id: Date.now() + i + Math.random(),
+                            stock: Math.floor(Math.random() * (selectedItem.stockRange[1] - selectedItem.stockRange[0] + 1)) + selectedItem.stockRange[0]
+                        };
+                        stock.push(item);
+                    } else {
+                        // Fallback: pick a common if no non-common selected
+                        const fallback = commons[Math.floor(Math.random() * commons.length)];
+                        if (fallback) {
+                            const item = {
+                                ...fallback,
+                                id: Date.now() + i + Math.random(),
+                                stock: Math.floor(Math.random() * (fallback.stockRange[1] - fallback.stockRange[0] + 1)) + fallback.stockRange[0]
+                            };
+                            stock.push(item);
+                        }
                     }
-                }
-                if (selectedItem) {
-                    const item = {
-                        ...selectedItem,
-                        id: Date.now() + i + Math.random(),
-                        stock: Math.floor(Math.random() * (selectedItem.stockRange[1] - selectedItem.stockRange[0] + 1)) + selectedItem.stockRange[0]
-                    };
-                    stock.push(item);
                 }
             }
+
+            // Debug: Log rarity breakdown
             const rarityCount = {};
             stock.forEach(item => {
                 rarityCount[item.rarity] = (rarityCount[item.rarity] || 0) + 1;
@@ -1133,7 +1168,7 @@
         function buyItem(itemId) {
             const item = currentStock.find(i => i.id === itemId);
             if (item && item.stock > 0 && canAffordItem(item.price)) {
-                if (!promptForPlayerName()) return; // Block purchase if no name
+                if (!promptForPlayerName()) return;
                 deductCurrency(item.price);
                 document.getElementById('ppInput').value = playerWealth.pp;
                 document.getElementById('gpInput').value = playerWealth.gp;
@@ -1149,7 +1184,7 @@
                 button.textContent = item.stock === 0 ? 'SOLD OUT' : `Purchase (${item.stock} left)`;
                 if (item.stock === 0) button.disabled = true;
                 card.style.boxShadow = '0 0 30px #00ff00';
-                sendPurchaseToWebhook(item, 1); // Send webhook
+                sendPurchaseToWebhook(item, 1);
                 setTimeout(() => {
                     card.style.boxShadow = '';
                     refreshItemButtons();

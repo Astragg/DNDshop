@@ -37,10 +37,10 @@
       "stockRange": [12, 30]
     },
     {
-      "name": "Dwarven Throwing Axe",
+      "name": "Dwarven Spear",
       "description": "Perfectly balanced for combat, made by master smiths.",
       "price": { "sp": 12 },
-      "stats": ["+18 Damage", "Bounce Effect", "Returning"],
+      "stats": ["1d6 Piercing"],
       "rarity": "common",
       "tier": "common",
       "stockRange": [8, 15]
@@ -49,7 +49,7 @@
       "name": "Antivan Poison Vial",
       "description": "A deadly concoction from the Crows of Antiva.",
       "price": { "sp": 8, "cp": 5 },
-      "stats": ["Instant Poison", "5 Stacks", "Anti-Mage"],
+      "stats": ["+1d6 Poison damage for 2 turns"],
       "rarity": "uncommon",
       "tier": "common",
       "stockRange": [10, 25]
@@ -58,7 +58,7 @@
       "name": "Qunari War Paint",
       "description": "Grants the ferocity of the Arishok himself.",
       "price": { "sp": 15 },
-      "stats": ["+15 Strength", "Rage Mode", "Taunt"],
+      "stats": ["+1 AC"],
       "rarity": "uncommon",
       "tier": "common",
       "stockRange": [6, 12]
@@ -119,4 +119,5 @@
     }
   ]
 }
+
 

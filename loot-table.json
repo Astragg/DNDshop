@@ -10,7 +10,7 @@
       "stockRange": [20, 50]
     },
     {
-      "name": "Iron Rations",
+      "name": "Bobs Left Toe",
       "description": "Preserved food for harsh conditions. Tastes like boot leather.",
       "price": { "cp": 5 },
       "stats": ["2 Days Food", "Cold Resistance"],
@@ -119,3 +119,4 @@
     }
   ]
 }
+

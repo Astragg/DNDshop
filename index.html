@@ -23,6 +23,168 @@
             position: relative;
         }
 
+        /* Floating Dev Button - ALWAYS VISIBLE */
+        .dev-toggle-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(145deg, rgba(139,0,139,0.9), rgba(75,0,130,0.9));
+            border: 2px solid #9932cc;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #ffd700;
+            box-shadow: 0 0 20px rgba(153,50,204,0.5);
+            transition: all 0.3s ease;
+            animation: devPulse 3s infinite;
+        }
+
+        .dev-toggle-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(153,50,204,0.8);
+            background: linear-gradient(145deg, #ba55d3, #9932cc);
+        }
+
+        @keyframes devPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(153,50,204,0.5); }
+            50% { box-shadow: 0 0 30px rgba(153,50,204,0.8); }
+        }
+
+        /* Dev Override Panel - Floating */
+        .dev-override {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            width: 280px;
+            background: linear-gradient(145deg, rgba(139,0,139,0.95), rgba(75,0,130,0.95));
+            border: 2px solid #9932cc;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 
+                0 0 30px rgba(153,50,204,0.6),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+            z-index: 1500;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .dev-override.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+            animation: devSlideIn 0.5s ease-out;
+        }
+
+        @keyframes devSlideIn {
+            0% { opacity: 0; transform: translateX(100%); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+
+        .dev-override-title {
+            font-size: 1.1rem;
+            color: #ffd700;
+            margin-bottom: 12px;
+            text-align: center;
+            text-shadow: 0 0 10px #ffd700;
+            font-family: 'Cinzel', serif;
+        }
+
+        .dev-key-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(25,0,25,0.9);
+            border: 2px solid #9932cc;
+            border-radius: 8px;
+            color: #00ff7f;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            text-align: center;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        .dev-key-input:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255,215,0,0.6);
+            background: rgba(25,0,25,1);
+        }
+
+        .dev-activate-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(145deg, #9932cc, #8a2be2);
+            color: #ffd700;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .dev-activate-btn:hover {
+            background: linear-gradient(145deg, #ba55d3, #9932cc);
+            box-shadow: 0 0 15px rgba(153,50,204,0.6);
+            transform: translateY(-1px);
+        }
+
+        .dev-status {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .dev-active {
+            color: #00ff7f;
+            text-shadow: 0 0 10px #00ff7f;
+            background: rgba(0,255,127,0.2);
+            border: 1px solid #00ff7f;
+        }
+
+        .dev-inactive {
+            color: #ff4757;
+            background: rgba(255,71,87,0.2);
+            border: 1px solid #ff4757;
+        }
+
+        .dev-close-btn {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #ffd700;
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dev-close-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Rest of existing styles... */
         body::before {
             content: '';
             position: fixed;
@@ -62,8 +224,16 @@
                 -2px -2px 4px rgba(255,215,0,0.3);
             margin-bottom: 10px;
             letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
+        .shop-title:hover {
+            transform: scale(1.02);
+            text-shadow: 0 0 20px #ffd700;
+        }
+
+        /* ... [All other existing styles remain exactly the same] ... */
         .shop-subtitle {
             font-size: 1.2rem;
             color: #b8860b;
@@ -131,93 +301,6 @@
             font-weight: 600;
         }
 
-        /* Dev Override Section */
-        .dev-override {
-            background: linear-gradient(145deg, rgba(139,0,139,0.9), rgba(75,0,130,0.9));
-            border: 2px solid #9932cc;
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 20px;
-            text-align: center;
-            box-shadow: 
-                0 0 25px rgba(153,50,204,0.4),
-                inset 0 1px 0 rgba(255,255,255,0.1);
-            display: none;
-        }
-
-        .dev-override.show {
-            display: block;
-            animation: devReveal 0.5s ease-out;
-        }
-
-        @keyframes devReveal {
-            0% { opacity: 0; transform: translateY(-20px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        .dev-override-title {
-            font-size: 1.1rem;
-            color: #ffd700;
-            margin-bottom: 8px;
-            text-shadow: 0 0 10px #ffd700;
-        }
-
-        .dev-key-input {
-            width: 200px;
-            padding: 8px 12px;
-            background: rgba(25,0,25,0.9);
-            border: 2px solid #9932cc;
-            border-radius: 8px;
-            color: #00ff7f;
-            font-family: 'Courier New', monospace;
-            font-size: 1rem;
-            text-align: center;
-            letter-spacing: 2px;
-        }
-
-        .dev-key-input:focus {
-            outline: none;
-            border-color: #ffd700;
-            box-shadow: 0 0 15px rgba(255,215,0,0.6);
-            background: rgba(25,0,25,1);
-        }
-
-        .dev-activate-btn {
-            padding: 6px 15px;
-            margin-left: 10px;
-            background: linear-gradient(145deg, #9932cc, #8a2be2);
-            color: #ffd700;
-            border: none;
-            border-radius: 6px;
-            font-family: 'Cinzel', serif;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-        }
-
-        .dev-activate-btn:hover {
-            background: linear-gradient(145deg, #ba55d3, #9932cc);
-            box-shadow: 0 0 15px rgba(153,50,204,0.6);
-            transform: translateY(-1px);
-        }
-
-        .dev-status {
-            margin-top: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .dev-active {
-            color: #00ff7f;
-            text-shadow: 0 0 10px #00ff7f;
-        }
-
-        .dev-inactive {
-            color: #ff4757;
-        }
-
         .controls {
             text-align: center;
             margin-bottom: 30px;
@@ -264,6 +347,11 @@
             50% { box-shadow: 0 0 20px #00ff7f; }
         }
 
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
         .refresh-count {
             font-weight: bold;
             color: #00ff7f;
@@ -275,7 +363,6 @@
             font-size: 1.1rem;
         }
 
-        /* Rest of styles remain the same */
         .items-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -496,7 +583,18 @@
             .item-card { padding: 20px; }
             .currency-inputs { gap: 10px; }
             .currency-group input { width: 60px; }
-            .dev-key-input { width: 150px; }
+            .dev-override { 
+                width: 250px; 
+                right: 10px; 
+                top: 70px;
+            }
+            .dev-toggle-btn { 
+                top: 10px; 
+                right: 10px;
+                width: 45px;
+                height: 45px;
+                font-size: 1.3rem;
+            }
         }
 
         .particle {
@@ -518,18 +616,22 @@
     </style>
 </head>
 <body>
+    <!-- Floating Dev Toggle Button - ALWAYS VISIBLE -->
+    <div class="dev-toggle-btn" id="devToggleBtn" title="🔮 Triple-click title or click here">🔮</div>
+
+    <!-- Floating Dev Override Panel -->
+    <div class="dev-override" id="devOverride">
+        <button class="dev-close-btn" onclick="toggleDevPanel()">✕</button>
+        <div class="dev-override-title">🔮 Arcane Override 🔮</div>
+        <input type="password" class="dev-key-input" id="devKeyInput" placeholder="Enter Code" maxlength="8">
+        <button class="dev-activate-btn" onclick="activateDevMode()">ACTIVATE</button>
+        <div class="dev-status" id="devStatus">Dev Mode: <span class="dev-inactive">OFF</span></div>
+    </div>
+
     <div class="shop-container">
         <div class="shop-header">
-            <h1 class="shop-title">The Black Emporium</h1>
+            <h1 class="shop-title" id="shopTitle">The Black Emporium</h1>
             <p class="shop-subtitle">Rare Wares for Discerning Adventurers</p>
-        </div>
-
-        <!-- Dev Override Section -->
-        <div class="dev-override" id="devOverride">
-            <div class="dev-override-title">🔮 <strong>Arcane Override</strong> 🔮</div>
-            <input type="password" class="dev-key-input" id="devKeyInput" placeholder="Enter Code" maxlength="8">
-            <button class="dev-activate-btn" onclick="activateDevMode()">ACTIVATE</button>
-            <div class="dev-status" id="devStatus">Dev Mode: <span class="dev-inactive">OFF</span></div>
         </div>
 
         <div class="currency-section">
@@ -567,7 +669,7 @@
         <div class="items-grid" id="itemsGrid"></div>
 
         <div class="footer">
-            ⚔️ Crafted for Dragon Age: The Veilguard ⚔️ | 💰 Currency-specific pricing | 2 refreshes/hour | 🔮 Dev Override Active
+            ⚔️ Crafted for Dragon Age: The Veilguard ⚔️ | 💰 Currency-specific pricing | 2 refreshes/hour | 🔮 Click purple orb!
         </div>
     </div>
 
@@ -587,10 +689,10 @@
         const MAX_REFRESHES = 2;
         const REFRESH_WINDOW = 60 * 60 * 1000;
 
-        // Dev Mode Functions
-        function toggleDevOverride() {
-            const devSection = document.getElementById('devOverride');
-            devSection.classList.toggle('show');
+        // Dev Mode Functions - FIXED TO ALWAYS BE ACCESSIBLE
+        function toggleDevPanel() {
+            const devPanel = document.getElementById('devOverride');
+            devPanel.classList.toggle('show');
         }
 
         function activateDevMode() {
@@ -600,66 +702,93 @@
 
             if (enteredKey === DEV_KEY) {
                 isDevMode = true;
-                status.innerHTML = 'Dev Mode: <span class="dev-active">ONLINE</span> ⚡';
+                status.innerHTML = '<span class="dev-active">ONLINE ⚡ Unlimited Refreshes!</span>';
                 keyInput.value = '';
-                keyInput.placeholder = 'Activated! Unlimited refreshes.';
+                keyInput.placeholder = 'Dev Mode Active!';
                 
                 // Visual feedback
-                document.getElementById('devOverride').style.boxShadow = '0 0 30px #00ff7f';
-                updateRefreshDisplay();
+                document.getElementById('devOverride').style.boxShadow = '0 0 40px #00ff7f';
+                document.querySelector('.dev-toggle-btn').style.background = 'linear-gradient(145deg, #00ff7f, #32cd32)';
                 
-                // Success sound effect (optional)
+                updateRefreshDisplay();
                 playSuccessSound();
+                
+                // Auto-close panel after success
+                setTimeout(() => {
+                    toggleDevPanel();
+                }, 1500);
             } else {
-                status.innerHTML = 'Dev Mode: <span class="dev-inactive">WRONG KEY</span> ❌';
+                status.innerHTML = '<span class="dev-inactive">WRONG KEY ❌</span>';
                 keyInput.value = '';
                 keyInput.placeholder = 'Invalid Code';
+                keyInput.style.borderColor = '#ff4757';
+                
                 setTimeout(() => {
                     status.innerHTML = 'Dev Mode: <span class="dev-inactive">OFF</span>';
                     keyInput.placeholder = 'Enter Code';
-                }, 2000);
-                keyInput.style.borderColor = '#ff4757';
-                setTimeout(() => {
                     keyInput.style.borderColor = '#9932cc';
-                }, 1000);
+                }, 2000);
             }
         }
 
         function playSuccessSound() {
-            // Simple beep for dev activation
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.value = 800;
-            oscillator.type = 'sine';
-            
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.5);
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch(e) {}
         }
 
-        // Toggle dev section with triple-click on shop title (secret!)
-        let clickCount = 0;
-        document.querySelector('.shop-title').addEventListener('click', function() {
-            clickCount++;
-            if (clickCount === 3) {
-                toggleDevOverride();
-                clickCount = 0;
-            }
-            setTimeout(() => clickCount = 0, 2000);
-        });
+        // Multiple ways to access dev panel - ALWAYS AVAILABLE
+        function setupDevAccess() {
+            const toggleBtn = document.getElementById('devToggleBtn');
+            const shopTitle = document.getElementById('shopTitle');
+            
+            // Method 1: Click purple orb (ALWAYS VISIBLE)
+            toggleBtn.addEventListener('click', toggleDevPanel);
+            
+            // Method 2: Triple-click shop title
+            let titleClickCount = 0;
+            shopTitle.addEventListener('click', function() {
+                titleClickCount++;
+                if (titleClickCount === 3) {
+                    toggleDevPanel();
+                    titleClickCount = 0;
+                    // Visual feedback
+                    shopTitle.style.color = '#00ff7f';
+                    setTimeout(() => shopTitle.style.color = '#ffd700', 1000);
+                }
+                setTimeout(() => titleClickCount = 0, 2000);
+            });
+            
+            // Method 3: Triple-click ANYWHERE (emergency access)
+            let bodyClickCount = 0;
+            document.body.addEventListener('click', function(e) {
+                if (e.target.closest('.dev-override') || e.target.closest('.dev-toggle-btn')) return;
+                bodyClickCount++;
+                if (bodyClickCount === 5) { // 5 clicks anywhere
+                    toggleDevPanel();
+                    bodyClickCount = 0;
+                }
+                setTimeout(() => bodyClickCount = 0, 3000);
+            }, true);
+        }
 
-        // Rest of the code (currency, items, refresh system) remains identical...
-        // [Insert all previous JavaScript functions here - itemTemplates, canAffordItem, etc.]
-
+        // [ALL EXISTING JAVASCRIPT FUNCTIONS REMAIN IDENTICAL - itemTemplates, currency functions, etc.]
         const itemTemplates = [
-            // TIER 1: Consumables & Basics (Bronze only, HIGH STOCK: 20-50)
+            // ... [Same item templates as before - no changes needed]
             {
                 name: "Traveler's Rations",
                 description: "Hard bread, dried meat, and cheese. Enough for a day's journey.",
@@ -696,7 +825,6 @@
                 tier: "basic",
                 stockRange: [12, 30]
             },
-            // TIER 2: Common Gear (Silver/Bronze mix, MEDIUM STOCK: 8-20)
             {
                 name: "Dwarven Throwing Axe",
                 description: "Perfectly balanced for combat, made by master smiths.",
@@ -724,7 +852,6 @@
                 tier: "common",
                 stockRange: [6, 12]
             },
-            // TIER 3: Quality Gear (Gold/Silver mix, LOW STOCK: 3-8)
             {
                 name: "Masterwork Longsword",
                 description: "A blade of exceptional craftsmanship from Orlais.",
@@ -752,7 +879,6 @@
                 tier: "quality",
                 stockRange: [1, 4]
             },
-            // TIER 4: Legendary Items (Gold/Platinum only, VERY LOW STOCK: 1-2)
             {
                 name: "Blade of the Warden",
                 description: "A longsword forged in the fires of Orzammar, tempered with lyrium.",
@@ -790,6 +916,7 @@
             legendary: '#ffd700'
         };
 
+        // [Include ALL previous functions - getTotalWealth, canAffordItem, etc.]
         // Currency functions
         function getTotalWealth() {
             return playerWealth.pp * 10 + playerWealth.gp + playerWealth.sp * 0.1 + playerWealth.cp * 0.01;
@@ -810,7 +937,6 @@
             }
         }
 
-        // Load/save wealth
         function loadWealth() {
             const saved = localStorage.getItem('daShopWealth');
             if (saved) {
@@ -846,7 +972,7 @@
             input.addEventListener('input', updateWealthFromInputs);
         });
 
-        // Refresh tracking (MODIFIED for dev mode)
+        // Refresh tracking
         function loadRefreshHistory() {
             const saved = localStorage.getItem('daShopRefreshes');
             return saved ? JSON.parse(saved) : [];
@@ -857,8 +983,7 @@
         }
 
         function getAvailableRefreshes() {
-            if (isDevMode) return Infinity; // Dev mode = unlimited!
-            
+            if (isDevMode) return Infinity;
             const history = loadRefreshHistory();
             const now = Date.now();
             const validRefreshes = history.filter(timestamp => now - timestamp < REFRESH_WINDOW);
@@ -870,8 +995,7 @@
         }
 
         function recordRefresh() {
-            if (isDevMode) return; // Don't track dev refreshes
-            
+            if (isDevMode) return;
             const history = loadRefreshHistory();
             history.push(Date.now());
             saveRefreshHistory(history);
@@ -880,33 +1004,31 @@
 
         function getNextRefreshTime() {
             if (isDevMode) return null;
-            
             const history = loadRefreshHistory();
             const now = Date.now();
             const validRefreshes = history.filter(timestamp => now - timestamp < REFRESH_WINDOW);
-            
             if (validRefreshes.length < MAX_REFRESHES) return null;
             return validRefreshes[0] + REFRESH_WINDOW;
         }
 
         function updateRefreshDisplay() {
             const available = getAvailableRefreshes();
-            const countElement = document.getElementById('refreshCount');
-            const limitElement = document.getElementById('refreshLimit');
             const refreshInfo = document.getElementById('refreshInfo');
 
             if (isDevMode) {
                 refreshInfo.innerHTML = `
                     💰 Press <strong>SPACEBAR</strong> to refresh stock 💰
                     <div class="refresh-limit dev-bypass">
-                        <span class="refresh-count">🔮 DEV MODE ACTIVE</span> - Unlimited Refreshes!
+                        <span class="refresh-count">🔮 DEV MODE ACTIVE</span><br>
+                        <small>Unlimited Refreshes!</small>
                     </div>
                 `;
                 return;
             }
 
+            const countElement = document.getElementById('refreshCount');
             countElement.textContent = `${available}/${MAX_REFRESHES}`;
-            limitElement.className = available > 0 ? 'refresh-limit' : 'refresh-limit warning';
+            document.getElementById('refreshLimit').className = available > 0 ? 'refresh-limit' : 'refresh-limit warning';
 
             if (available > 0) {
                 refreshInfo.innerHTML = `
@@ -953,11 +1075,10 @@
             }, 1000);
         }
 
-        // Shop functions (generateRandomStock, createItemCard, etc. remain the same)
+        // Shop functions (unchanged)
         function generateRandomStock() {
             const stock = [];
             const stockSize = 8 + Math.floor(Math.random() * 4);
-            
             const tierWeights = [
                 { tier: 'basic', weight: 0.4 },
                 { tier: 'common', weight: 0.3 },
@@ -995,8 +1116,8 @@
                 if (amount > 0) {
                     const coinClass = `coin-icon coin-${currency}`;
                     priceHtml += `<span class="coin-stack">
-                        ${Array(amount).fill(0).map(() => `<span class="${coinClass}"></span>`).join('')}
-                        <span style="margin-left: 5px;">${amount}</span>
+                        ${Array(Math.min(amount, 3)).fill(0).map(() => `<span class="${coinClass}"></span>`).join('')}
+                        ${amount > 3 ? `+${amount-3}` : amount}
                         <span style="font-size: 0.9rem; margin-left: 3px;">${currency.toUpperCase()}</span>
                     </span>`;
                 }
@@ -1052,7 +1173,6 @@
             currentStock.forEach(item => {
                 const canAfford = canAffordItem(item.price);
                 const button = document.querySelector(`[onclick="buyItem(${item.id})"]`);
-                
                 if (button) {
                     button.textContent = canAfford ? `Purchase (${item.stock} left)` : 'Need Exact Coins';
                     button.disabled = !canAfford;
@@ -1070,7 +1190,6 @@
             currentStock = generateRandomStock();
             const grid = document.getElementById('itemsGrid');
             grid.innerHTML = currentStock.map(item => createItemCard(item)).join('');
-            
             recordRefresh();
             
             const overlay = document.getElementById('refreshOverlay');
@@ -1124,10 +1243,12 @@
         });
 
         window.addEventListener('load', function() {
+            setupDevAccess(); // Initialize dev access
             loadWealth();
             updateRefreshDisplay();
             refreshStock();
             
+            // Floating particles
             setInterval(() => {
                 const particle = document.createElement('div');
                 particle.className = 'particle';

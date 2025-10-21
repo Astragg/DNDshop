@@ -1,0 +1,121 @@
+{
+  "itemTemplates": [
+    {
+      "name": "Traveler's Rations",
+      "description": "Hard bread, dried meat, and cheese. Enough for a day's journey.",
+      "price": { "cp": 2 },
+      "stats": ["1 Day Food", "No Exhaustion"],
+      "rarity": "common",
+      "tier": "basic",
+      "stockRange": [20, 50]
+    },
+    {
+      "name": "Iron Rations",
+      "description": "Preserved food for harsh conditions. Tastes like boot leather.",
+      "price": { "cp": 5 },
+      "stats": ["2 Days Food", "Cold Resistance"],
+      "rarity": "common",
+      "tier": "basic",
+      "stockRange": [15, 40]
+    },
+    {
+      "name": "Healing Salve",
+      "description": "Herbal paste that mends minor wounds.",
+      "price": { "cp": 8 },
+      "stats": ["Heal 1d4+2", "Stop Bleeding"],
+      "rarity": "uncommon",
+      "tier": "basic",
+      "stockRange": [25, 60]
+    },
+    {
+      "name": "Holy Water Vial",
+      "description": "Blessed water from the nearest chantry.",
+      "price": { "sp": 2 },
+      "stats": ["+1d4 vs Demons", "Purify Water"],
+      "rarity": "uncommon",
+      "tier": "basic",
+      "stockRange": [12, 30]
+    },
+    {
+      "name": "Dwarven Throwing Axe",
+      "description": "Perfectly balanced for combat, made by master smiths.",
+      "price": { "sp": 12 },
+      "stats": ["+18 Damage", "Bounce Effect", "Returning"],
+      "rarity": "common",
+      "tier": "common",
+      "stockRange": [8, 15]
+    },
+    {
+      "name": "Antivan Poison Vial",
+      "description": "A deadly concoction from the Crows of Antiva.",
+      "price": { "sp": 8, "cp": 5 },
+      "stats": ["Instant Poison", "5 Stacks", "Anti-Mage"],
+      "rarity": "uncommon",
+      "tier": "common",
+      "stockRange": [10, 25]
+    },
+    {
+      "name": "Qunari War Paint",
+      "description": "Grants the ferocity of the Arishok himself.",
+      "price": { "sp": 15 },
+      "stats": ["+15 Strength", "Rage Mode", "Taunt"],
+      "rarity": "uncommon",
+      "tier": "common",
+      "stockRange": [6, 12]
+    },
+    {
+      "name": "Masterwork Longsword",
+      "description": "A blade of exceptional craftsmanship from Orlais.",
+      "price": { "gp": 3 },
+      "stats": ["+25 Damage", "15% Crit Chance"],
+      "rarity": "rare",
+      "tier": "quality",
+      "stockRange": [3, 6]
+    },
+    {
+      "name": "Fade-Touched Leather",
+      "description": "Supple armor infused with the essence of the Fade itself.",
+      "price": { "gp": 2, "sp": 15 },
+      "stats": ["+12 Defense", "+8 Magic Resist", "Fade Step"],
+      "rarity": "rare",
+      "tier": "quality",
+      "stockRange": [2, 5]
+    },
+    {
+      "name": "Chantry Blessed Amulet",
+      "description": "Protected by the Maker's light.",
+      "price": { "gp": 2, "sp": 10 },
+      "stats": ["+18 Willpower", "Holy Ward", "Purify"],
+      "rarity": "epic",
+      "tier": "quality",
+      "stockRange": [1, 4]
+    },
+    {
+      "name": "Blade of the Warden",
+      "description": "A longsword forged in the fires of Orzammar, tempered with lyrium.",
+      "price": { "gp": 85 },
+      "stats": ["+35 Damage", "25% Crit Chance", "Lyrium Bleed"],
+      "rarity": "legendary",
+      "tier": "legendary",
+      "stockRange": [1, 1]
+    },
+    {
+      "name": "Lyrium-Laced Ring",
+      "description": "A silver band pulsing with raw magical energy.",
+      "price": { "gp": 27, "sp": 5 },
+      "stats": ["+30 Mana", "+15% Spell Power", "Mana Regen"],
+      "rarity": "epic",
+      "tier": "legendary",
+      "stockRange": [1, 2]
+    },
+    {
+      "name": "Elven Spirit Essence",
+      "description": "Distilled from ancient Dalish rituals. Exceedingly rare.",
+      "price": { "pp": 1, "gp": 2 },
+      "stats": ["Full Heal", "Temp HP +20", "Spirit Vision"],
+      "rarity": "legendary",
+      "tier": "legendary",
+      "stockRange": [1, 1]
+    }
+  ]
+}

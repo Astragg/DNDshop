@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dragon Age - The Black Emporium</title>
     <style>
-        /* [ALL PREVIOUS STYLES REMAIN IDENTICAL - no changes needed] */
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Uncial+Antiqua&display=swap');
         
         * {
@@ -206,7 +205,41 @@
             line-height: 1.4;
         }
 
-        /* [ALL OTHER EXISTING STYLES - shop-container, items-grid, etc. remain EXACTLY THE SAME] */
+        /* VERSION WATERMARK STYLES */
+        .version-watermark {
+            font-family: 'Courier New', monospace;
+            background: rgba(0,0,0,0.7);
+            border: 1px solid #ffd700;
+            border-radius: 6px;
+            padding: 4px 8px;
+            margin-top: 8px;
+            display: inline-block;
+            animation: versionGlow 2s ease-in-out infinite alternate;
+        }
+
+        .version-updated {
+            color: #00ff7f !important;
+            border-color: #00ff7f !important;
+            box-shadow: 0 0 10px rgba(0,255,127,0.5);
+        }
+
+        .version-outdated {
+            color: #ff4757 !important;
+            border-color: #ff4757 !important;
+            box-shadow: 0 0 10px rgba(255,71,87,0.5);
+            animation: versionPulse 1s infinite;
+        }
+
+        @keyframes versionGlow {
+            0% { box-shadow: 0 0 5px rgba(255,215,0,0.3); }
+            100% { box-shadow: 0 0 15px rgba(255,215,0,0.6); }
+        }
+
+        @keyframes versionPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
         body::before {
             content: '';
             position: fixed;
@@ -551,8 +584,10 @@
 
         <div class="items-grid" id="itemsGrid"></div>
 
-        <div class="footer">
+        <!-- UPDATED FOOTER WITH VERSION WATERMARK -->
+        <div class="footer" id="versionFooter">
             ⚔️ Dragon Age: The Veilguard ⚔️ | 📦 Items from loot-table.json | 🔮 Click purple orb for Dev Mode
+            <div id="versionWatermark" style="display: none; margin-top: 8px; font-size: 0.8rem;"></div>
         </div>
     </div>
 
@@ -563,6 +598,10 @@
     </div>
 
     <script>
+        // 🌟 VERSION WATERMARK SYSTEM
+        const SHOP_VERSION = "v1"; // 👈 CHANGE THIS WHEN YOU UPDATE!
+        const STORAGE_KEY = 'shopVersion';
+
         // GLOBAL VARIABLES
         let itemTemplates = []; // Will be loaded from JSON
         let currentStock = [];
@@ -571,6 +610,52 @@
         const DEV_KEY = "WARDEN69";
         const MAX_REFRESHES = 2;
         const REFRESH_WINDOW = 60 * 60 * 1000;
+
+        // VERSION WATERMARK FUNCTIONS
+        function checkVersionAndShowWatermark() {
+            const lastVersion = localStorage.getItem(STORAGE_KEY);
+            const watermark = document.getElementById('versionWatermark');
+            
+            watermark.innerHTML = `🛒 SHOP ${SHOP_VERSION} LOADED`;
+            watermark.style.display = 'inline-block';
+            watermark.className = 'version-watermark';
+            
+            if (lastVersion === SHOP_VERSION) {
+                // ✅ Same version - show normal gold
+                watermark.innerHTML += ` ✅`;
+                watermark.style.color = '#ffd700';
+            } else {
+                // 🎉 NEW VERSION! Show green + update storage
+                watermark.innerHTML += ` 🎉 UPDATED!`;
+                watermark.style.color = '#00ff7f';
+                watermark.classList.add('version-updated');
+                localStorage.setItem(STORAGE_KEY, SHOP_VERSION);
+                
+                // 🎵 Success sound for new version
+                playVersionUpdateSound();
+            }
+        }
+
+        function playVersionUpdateSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // 🎵 Upbeat 3-note fanfare
+                const notes = [523, 659, 784]; // C, E, G
+                notes.forEach((freq, i) => {
+                    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime + i * 0.2);
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime + i * 0.2);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.2 + 0.15);
+                });
+                
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.6);
+            } catch(e) {}
+        }
 
         // LOAD LOOT TABLE FROM EXTERNAL JSON
         async function loadLootTable() {
@@ -609,6 +694,7 @@
             updateRefreshDisplay();
             refreshStock();
             startParticles();
+            checkVersionAndShowWatermark(); // 👈 VERSION WATERMARK!
             
             // Hide loading screen
             setTimeout(() => {
@@ -827,48 +913,52 @@
             }, 1000);
         }
 
-        // SHOP FUNCTIONS
-// 🔥 NEW: Individual Spawn Chance System!
-function generateRandomStock() {
-    const stock = [];
-    const stockSize = 8 + Math.floor(Math.random() * 4); // 8-11 items
-    
-    for (let i = 0; i < stockSize; i++) {
-        // 🎲 ROLL FOR EACH ITEM INDIVIDUALLY
-        const roll = Math.random();
-        let selectedItem = null;
-        
-        // Try each item based on its spawnChance (highest first)
-        for (let itemTemplate of itemTemplates) {
-            if (roll <= itemTemplate.spawnChance) {
-                selectedItem = itemTemplate;
-                break;
+        // SHOP FUNCTIONS - INDIVIDUAL SPAWN CHANCE SYSTEM
+        function generateRandomStock() {
+            const stock = [];
+            const stockSize = 8 + Math.floor(Math.random() * 4); // 8-11 items
+            
+            for (let i = 0; i < stockSize; i++) {
+                // 🎲 ROLL 0.0 - 1.0 for each slot
+                const roll = Math.random();
+                let selectedItem = null;
+                
+                // Check each item by spawnChance (highest first)
+                for (let itemTemplate of itemTemplates) {
+                    if (roll <= itemTemplate.spawnChance) {
+                        selectedItem = itemTemplate;
+                        break;
+                    }
+                }
+                
+                // 🛡️ FALLBACK: If roll fails all chances, pick COMMON
+                if (!selectedItem) {
+                    const commons = itemTemplates.filter(item => item.rarity === 'common');
+                    if (commons.length > 0) {
+                        selectedItem = commons[Math.floor(Math.random() * commons.length)];
+                    }
+                }
+                
+                if (selectedItem) {
+                    const item = {
+                        ...selectedItem,
+                        id: Date.now() + i + Math.random(),
+                        stock: Math.floor(Math.random() * (selectedItem.stockRange[1] - selectedItem.stockRange[0] + 1)) + selectedItem.stockRange[0]
+                    };
+                    stock.push(item);
+                }
             }
+            
+            // 📊 DEBUG INFO (Console)
+            const rarityCount = {};
+            stock.forEach(item => {
+                rarityCount[item.rarity] = (rarityCount[item.rarity] || 0) + 1;
+            });
+            console.log(`🎲 Stock Generated: ${stock.length} items`);
+            console.log(`📊 Breakdown:`, rarityCount);
+            
+            return stock;
         }
-        
-        // If no item matched spawnChance, pick a "common" fallback
-        if (!selectedItem) {
-            const commons = itemTemplates.filter(item => item.rarity === 'common');
-            if (commons.length > 0) {
-                selectedItem = commons[Math.floor(Math.random() * commons.length)];
-            }
-        }
-        
-        if (selectedItem) {
-            const item = {
-                ...selectedItem,
-                id: Date.now() + i + Math.random(),
-                stock: Math.floor(Math.random() * (selectedItem.stockRange[1] - selectedItem.stockRange[0] + 1)) + selectedItem.stockRange[0]
-            };
-            stock.push(item);
-        }
-    }
-    
-    console.log(`🎲 Generated stock: ${stock.length} items`);
-    console.log(`📊 Rarities: ${stock.map(item => item.rarity).join(', ')}`);
-    
-    return stock;
-}
 
         const rarityColors = {
             common: '#c0c0c0',

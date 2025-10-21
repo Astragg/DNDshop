@@ -48,7 +48,7 @@
 
         .shop-header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
             position: relative;
         }
 
@@ -70,6 +70,66 @@
             color: #b8860b;
             font-style: italic;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .currency-section {
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #8b4513;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(139,69,19,0.3);
+        }
+
+        .currency-title {
+            font-size: 1.3rem;
+            color: #ffd700;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .currency-inputs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .currency-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .currency-group label {
+            font-size: 0.9rem;
+            color: #d4af37;
+            margin-bottom: 5px;
+        }
+
+        .currency-group input {
+            width: 80px;
+            padding: 8px;
+            background: rgba(45,27,45,0.8);
+            border: 1px solid #8b4513;
+            border-radius: 5px;
+            color: #ffd700;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        .currency-group input:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255,215,0,0.5);
+        }
+
+        .total-wealth {
+            font-size: 1.1rem;
+            color: #ff6b35;
+            font-weight: 600;
         }
 
         .controls {
@@ -215,14 +275,25 @@
             overflow: hidden;
         }
 
-        .buy-button:hover {
+        .buy-button:hover:not(:disabled) {
             background: linear-gradient(145deg, #a0522d, #cd853f);
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(139,69,19,0.4);
         }
 
+        .buy-button:disabled {
+            background: #4a4a4a;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
         .buy-button:active {
             transform: translateY(0);
+        }
+
+        .insufficient-funds {
+            color: #ff4757 !important;
+            font-weight: bold;
         }
 
         .refresh-overlay {
@@ -283,6 +354,14 @@
             .item-card {
                 padding: 20px;
             }
+
+            .currency-inputs {
+                gap: 10px;
+            }
+
+            .currency-group input {
+                width: 60px;
+            }
         }
 
         /* Floating particles */
@@ -321,6 +400,29 @@
             <p class="shop-subtitle">Rare Wares for Discerning Adventurers</p>
         </div>
 
+        <div class="currency-section">
+            <div class="currency-title">Your Vault: Enter Your Wealth</div>
+            <div class="currency-inputs">
+                <div class="currency-group">
+                    <label>Platinum (pp)</label>
+                    <input type="number" id="ppInput" min="0" value="0">
+                </div>
+                <div class="currency-group">
+                    <label>Gold (gp)</label>
+                    <input type="number" id="gpInput" min="0" value="0">
+                </div>
+                <div class="currency-group">
+                    <label>Silver (sp)</label>
+                    <input type="number" id="spInput" min="0" value="0">
+                </div>
+                <div class="currency-group">
+                    <label>Copper (cp)</label>
+                    <input type="number" id="cpInput" min="0" value="0">
+                </div>
+            </div>
+            <div class="total-wealth" id="totalWealth">Total: 0 gp</div>
+        </div>
+
         <div class="controls">
             <div class="refresh-info">
                 💰 Press <strong>SPACEBAR</strong> to refresh stock 💰
@@ -332,7 +434,7 @@
         </div>
 
         <div class="footer">
-            ⚔️ Crafted for Dragon Age: The Veilguard ⚔️
+            ⚔️ Crafted for Dragon Age: The Veilguard ⚔️ | 💰 Manage your coin wisely!
         </div>
     </div>
 
@@ -343,7 +445,7 @@
     </div>
 
     <script>
-        // Dragon Age themed items
+        // Dragon Age themed items (prices in gp)
         const itemTemplates = [
             {
                 name: "Blade of the Warden",
@@ -413,6 +515,48 @@
         };
 
         let currentStock = [];
+        let playerWealth = { pp: 0, gp: 0, sp: 0, cp: 0 };
+
+        // Load/save wealth to localStorage
+        function loadWealth() {
+            const saved = localStorage.getItem('daShopWealth');
+            if (saved) {
+                playerWealth = JSON.parse(saved);
+                document.getElementById('ppInput').value = playerWealth.pp;
+                document.getElementById('gpInput').value = playerWealth.gp;
+                document.getElementById('spInput').value = playerWealth.sp;
+                document.getElementById('cpInput').value = playerWealth.cp;
+            }
+            updateTotalWealth();
+        }
+
+        function saveWealth() {
+            localStorage.setItem('daShopWealth', JSON.stringify(playerWealth));
+        }
+
+        // Calculate total wealth in gp equivalent
+        function getTotalWealth() {
+            return playerWealth.pp * 10 + playerWealth.gp + playerWealth.sp * 0.1 + playerWealth.cp * 0.01;
+        }
+
+        function updateTotalWealth() {
+            const total = getTotalWealth();
+            document.getElementById('totalWealth').textContent = `Total: ${total.toFixed(2)} gp`;
+        }
+
+        // Update wealth on input change
+        function updateWealthFromInputs() {
+            playerWealth.pp = parseInt(document.getElementById('ppInput').value) || 0;
+            playerWealth.gp = parseInt(document.getElementById('gpInput').value) || 0;
+            playerWealth.sp = parseInt(document.getElementById('spInput').value) || 0;
+            playerWealth.cp = parseInt(document.getElementById('cpInput').value) || 0;
+            saveWealth();
+            updateTotalWealth();
+        }
+
+        document.querySelectorAll('.currency-group input').forEach(input => {
+            input.addEventListener('input', updateWealthFromInputs);
+        });
 
         function generateRandomStock() {
             const stock = [];
@@ -435,6 +579,9 @@
         function createItemCard(item) {
             const rarityColor = rarityColors[item.rarity] || '#ffffff';
             const imageStyle = getItemImageStyle(item.rarity);
+            const canAfford = getTotalWealth() >= item.price;
+            const buttonText = canAfford ? `Purchase (${item.stock} left)` : 'Insufficient Funds';
+            const buttonClass = canAfford ? '' : 'insufficient-funds';
             
             return `
                 <div class="item-card" style="--rarity-color: ${rarityColor}">
@@ -453,10 +600,10 @@
                     </div>
                     <div class="item-price">
                         <span class="coin-icon"></span>
-                        ${item.price.toLocaleString()}
+                        ${item.price.toLocaleString()} gp
                     </div>
-                    <button class="buy-button" onclick="buyItem(${item.id})">
-                        Purchase (${item.stock} left)
+                    <button class="buy-button ${buttonClass}" onclick="buyItem(${item.id})" ${!canAfford ? 'disabled' : ''}>
+                        ${buttonText}
                     </button>
                 </div>
             `;
@@ -488,7 +635,53 @@
 
         function buyItem(itemId) {
             const item = currentStock.find(i => i.id === itemId);
-            if (item && item.stock > 0) {
+            if (item && item.stock > 0 && getTotalWealth() >= item.price) {
+                // Deduct cost (simplified: subtract from gp first, then cascade)
+                const cost = item.price;
+                let remainingCost = cost;
+
+                // Subtract from gp
+                if (playerWealth.gp >= remainingCost) {
+                    playerWealth.gp -= remainingCost;
+                } else {
+                    remainingCost -= playerWealth.gp;
+                    playerWealth.gp = 0;
+
+                    // Subtract from pp (convert 1 pp = 10 gp)
+                    const ppNeeded = Math.ceil(remainingCost / 10);
+                    if (playerWealth.pp >= ppNeeded) {
+                        playerWealth.pp -= ppNeeded;
+                        remainingCost = 0;
+                    } else {
+                        remainingCost -= playerWealth.pp * 10;
+                        playerWealth.pp = 0;
+
+                        // Subtract from sp (convert 1 sp = 0.1 gp)
+                        const spNeeded = Math.ceil(remainingCost * 10);
+                        if (playerWealth.sp >= spNeeded) {
+                            playerWealth.sp -= spNeeded;
+                            remainingCost = 0;
+                        } else {
+                            remainingCost = (remainingCost * 10 - playerWealth.sp) / 10;
+                            playerWealth.sp = 0;
+
+                            // Subtract from cp (convert 1 cp = 0.01 gp)
+                            const cpNeeded = Math.ceil(remainingCost * 100);
+                            playerWealth.cp -= cpNeeded;
+                            remainingCost = 0;
+                        }
+                    }
+                }
+
+                // Update inputs and total
+                document.getElementById('ppInput').value = playerWealth.pp;
+                document.getElementById('gpInput').value = playerWealth.gp;
+                document.getElementById('spInput').value = playerWealth.sp;
+                document.getElementById('cpInput').value = playerWealth.cp;
+                saveWealth();
+                updateTotalWealth();
+
+                // Update item stock
                 item.stock--;
                 const card = document.querySelector(`[onclick="buyItem(${itemId})"]`).closest('.item-card');
                 const button = card.querySelector('.buy-button');
@@ -496,15 +689,26 @@
                 if (item.stock === 0) {
                     button.textContent = 'SOLD OUT';
                     button.disabled = true;
-                    button.style.opacity = '0.6';
+                    button.classList.remove('insufficient-funds');
                 } else {
                     button.textContent = `Purchase (${item.stock} left)`;
                 }
                 
-                // Flash effect
+                // Success flash
                 card.style.boxShadow = '0 0 30px #00ff00';
                 setTimeout(() => {
                     card.style.boxShadow = '';
+                    // Re-check affordability for other items
+                    currentStock.forEach(i => {
+                        if (getTotalWealth() < i.price) {
+                            const otherButton = document.querySelector(`[onclick="buyItem(${i.id})"]`);
+                            if (otherButton) {
+                                otherButton.textContent = 'Insufficient Funds';
+                                otherButton.disabled = true;
+                                otherButton.classList.add('insufficient-funds');
+                            }
+                        }
+                    });
                 }, 500);
             }
         }
@@ -519,6 +723,7 @@
 
         // Initialize shop
         window.addEventListener('load', function() {
+            loadWealth();
             refreshStock();
             
             // Create floating particles

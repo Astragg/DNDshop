@@ -14,7 +14,7 @@
       "name": "Bobs Left Toe",
       "description": "Preserved food for harsh conditions. Tastes like boot leather.",
       "price": { "cp": 5 },
-      "stats": ["1 Day Food", "Cold Resistance", "Heals 1HP if eaten outside camp"],
+      "stats": ["1 Day Food", "Heals 1HP if eaten outside camp"],
       "rarity": "common",
       "tier": "basic",
       "stockRange": [15, 40]
@@ -132,6 +132,7 @@
     }
   ]
 }
+
 
 
 

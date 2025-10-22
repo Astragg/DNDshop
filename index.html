@@ -634,7 +634,7 @@
 
 <script>
     // VERSION WATERMARK SYSTEM
-    const SHOP_VERSION = "v2.1.8";
+    const SHOP_VERSION = "v2.2.0";
     const STORAGE_KEY = 'shopVersion';
 
     // WEBHOOK CONFIG
@@ -648,10 +648,31 @@
     let isDevMode = false;
     const DEV_KEY = "WARDEN69";
     const MAX_FREE_REFRESHES = 2;
-    const REFRESH_WINDOW = 60 * 60 * 1000;
+    const REFRESH_WINDOW = 60 * 60 * 1000; // 1 hour
 
-    // *** FIXED: Track page session to prevent CTRL+R exploit ***
-    let sessionId = Date.now() + Math.random();
+    // *** NEW: TRACK ROLLS + LAST STOCK ***
+    function loadRollState() {
+        const saved = localStorage.getItem('daShopRollState');
+        if (saved) {
+            const state = JSON.parse(saved);
+            const now = Date.now();
+            // Check if cooldown expired
+            if (now - state.lastRefreshTime >= REFRESH_WINDOW) {
+                console.log("⏰ COOLDOWN EXPIRED - Reset to 0/2");
+                return { rollsUsed: 0, stock: null, lastRefreshTime: 0 };
+            }
+            return state;
+        }
+        return { rollsUsed: 0, stock: null, lastRefreshTime: 0 };
+    }
+
+    function saveRollState(rollsUsed, stock) {
+        localStorage.setItem('daShopRollState', JSON.stringify({
+            rollsUsed,
+            stock,
+            lastRefreshTime: Date.now()
+        }));
+    }
 
     // WEBHOOK PURCHASE NOTIFICATION (unchanged)
     async function sendPurchaseToWebhook(item, quantity) {
@@ -685,7 +706,7 @@
     }
 
     // VERSION WATERMARK FUNCTIONS
-    function checkVersionAndShowWatermark() {
+    function checkVersionAndShowWatermark(rollsUsed) {
         const lastVersion = localStorage.getItem(STORAGE_KEY);
         const watermark = document.getElementById('versionWatermark');
         
@@ -694,10 +715,10 @@
         watermark.className = 'version-watermark';
         
         if (lastVersion === SHOP_VERSION) {
-            watermark.innerHTML += ` ✅`;
-            watermark.style.color = '#ffd700';
+            watermark.innerHTML += ` ${rollsUsed}/${MAX_FREE_REFRESHES}`;
+            watermark.style.color = rollsUsed === 2 ? '#ff4757' : '#ffd700';
         } else {
-            watermark.innerHTML += ` 🎉 ANTI-EXPLOIT!`;
+            watermark.innerHTML += ` 🎉 ROLL SYSTEM FIXED!`;
             watermark.style.color = '#00ff7f';
             watermark.classList.add('version-updated');
             localStorage.setItem(STORAGE_KEY, SHOP_VERSION);
@@ -721,12 +742,6 @@
             oscillator.start();
             oscillator.stop(audioContext.currentTime + 0.6);
         } catch(e) {}
-    }
-
-    // *** FIXED: Clear manual refreshes on page reload ***
-    function clearManualRefreshHistory() {
-        localStorage.removeItem('daShopManualRefreshes');
-        console.log("🧹 REFRESH HISTORY CLEARED - Full 2/2 FREE on reload!");
     }
 
     // PLAYER NAME FUNCTIONS (unchanged)
@@ -781,61 +796,41 @@
         loadingScreen.classList.remove('hidden');
     }
 
-    // *** PERFECT INITIALIZE - FULL RESET ON EVERY LOAD ***
+    // *** PERFECT INITIALIZE - LOADS LAST ROLL STATE ***
     function initializeShop() {
-        // *** ANTI-EXPLOIT: Clear refresh history on EVERY page load ***
-        clearManualRefreshHistory();
-        
         setupDevAccess();
         setupCurrency();
         loadWealth();
         loadPlayerName();
-        updateRefreshDisplay();
         
-        // *** ALWAYS FULL RESET: 2/2 FREE + NEW STOCK ***
-        console.log("🎲 PAGE LOAD: FULL RESET - 2/2 FREE + NEW STOCK");
-        currentStock = generateRandomStock();
+        // *** LOAD LAST ROLL STATE + STOCK ***
+        const rollState = loadRollState();
+        const rollsUsed = rollState.rollsUsed;
+        
+        console.log(`🎲 PAGE LOAD: ${rollsUsed}/${MAX_FREE_REFRESHES} rolls used`);
+        
+        if (rollsUsed === 0) {
+            // FIRST LOAD - Generate initial stock
+            currentStock = generateRandomStock();
+            console.log("🎲 INITIAL STOCK GENERATED");
+        } else {
+            // LOAD LAST STOCK FROM STORAGE
+            currentStock = rollState.stock;
+            console.log("🎲 LAST STOCK LOADED FROM STORAGE");
+        }
+        
         document.getElementById('itemsGrid').innerHTML = currentStock.map(createItemCard).join('');
+        updateRefreshDisplay(rollsUsed);
+        checkVersionAndShowWatermark(rollsUsed);
         
         startParticles();
-        checkVersionAndShowWatermark();
         promptForPlayerName();
         setTimeout(() => {
             document.getElementById('loadingScreen').classList.add('hidden');
         }, 1000);
     }
 
-    // *** FIXED REFRESH SYSTEM - ONLY TRACKS SPACEBAR ***
-    function loadRefreshHistory() {
-        return JSON.parse(localStorage.getItem('daShopManualRefreshes') || '[]');
-    }
-
-    function saveRefreshHistory(history) {
-        localStorage.setItem('daShopManualRefreshes', JSON.stringify(history));
-    }
-
-    function getAvailableFreeRefreshes() {
-        if (isDevMode) return Infinity;
-        const history = loadRefreshHistory();
-        const now = Date.now();
-        const validRefreshes = history.filter(ts => now - ts < REFRESH_WINDOW);
-        return MAX_FREE_REFRESHES - validRefreshes.length;
-    }
-
-    function canManualRefresh() {
-        return isDevMode || getAvailableFreeRefreshes() > 0;
-    }
-
-    function recordManualRefresh() {
-        if (isDevMode) return;
-        const history = loadRefreshHistory();
-        history.push(Date.now());
-        saveRefreshHistory(history);
-        console.log("🔄 SPACEBAR REFRESH RECORDED - free rolls used:", MAX_FREE_REFRESHES - getAvailableFreeRefreshes() + 1);
-    }
-
-    function updateRefreshDisplay() {
-        const available = getAvailableFreeRefreshes();
+    function updateRefreshDisplay(rollsUsed) {
         const refreshInfo = document.getElementById('refreshInfo');
 
         if (isDevMode) {
@@ -849,35 +844,23 @@
             return;
         }
 
-        if (available > 0) {
+        if (rollsUsed < MAX_FREE_REFRESHES) {
             refreshInfo.innerHTML = `
                 💰 Press <strong>SPACEBAR</strong> to refresh stock 💰
                 <div class="refresh-limit">
-                    <span id="refreshCount">${available}/${MAX_FREE_REFRESHES}</span> FREE refreshes remaining this hour
+                    <span id="refreshCount">${rollsUsed}/${MAX_FREE_REFRESHES}</span> FREE refreshes used
                 </div>
             `;
         } else {
-            const nextRefresh = getNextRefreshTime();
-            if (nextRefresh) {
-                const timeLeft = Math.ceil((nextRefresh - Date.now()) / 1000);
-                refreshInfo.innerHTML = `
-                    ⏳ <strong>All Free Refreshes Used</strong> ⏳
-                    <div class="refresh-limit warning">
-                        <span class="cooldown-timer">${formatTimeLeft(timeLeft)} until 2 new FREE refreshes</span>
-                    </div>
-                `;
-                startCountdown(nextRefresh);
-            }
+            const timeLeft = Math.ceil((REFRESH_WINDOW - (Date.now() - loadRollState().lastRefreshTime)) / 1000);
+            refreshInfo.innerHTML = `
+                ⏳ <strong>MAX ROLLS USED</strong> ⏳
+                <div class="refresh-limit warning">
+                    <span class="cooldown-timer">${formatTimeLeft(timeLeft)} until new rolls</span>
+                </div>
+            `;
+            startCountdown();
         }
-    }
-
-    function getNextRefreshTime() {
-        if (isDevMode) return null;
-        const history = loadRefreshHistory();
-        const now = Date.now();
-        const validRefreshes = history.filter(ts => now - ts < REFRESH_WINDOW);
-        if (validRefreshes.length < MAX_FREE_REFRESHES) return null;
-        return validRefreshes[0] + REFRESH_WINDOW;
     }
 
     function formatTimeLeft(seconds) {
@@ -887,38 +870,47 @@
     }
 
     let countdownInterval = null;
-    function startCountdown(nextRefreshTime) {
+    function startCountdown() {
         if (countdownInterval) clearInterval(countdownInterval);
         countdownInterval = setInterval(() => {
-            const timeLeft = Math.ceil((nextRefreshTime - Date.now()) / 1000);
-            if (timeLeft <= 0) {
+            const rollState = loadRollState();
+            if (Date.now() - rollState.lastRefreshTime >= REFRESH_WINDOW) {
                 clearInterval(countdownInterval);
-                updateRefreshDisplay();
+                location.reload(); // Reset to 0/2
                 return;
             }
+            const timeLeft = Math.ceil((REFRESH_WINDOW - (Date.now() - rollState.lastRefreshTime)) / 1000);
             document.querySelector('.cooldown-timer').textContent = formatTimeLeft(timeLeft);
         }, 1000);
     }
 
-    // *** FIXED: SPACEBAR ONLY - No exploit possible ***
+    // *** PERFECT REROLL - SAVES STOCK ***
     function refreshStock() {
-        if (!canManualRefresh()) {
-            updateRefreshDisplay();
-            return;
+        const rollState = loadRollState();
+        const rollsUsed = rollState.rollsUsed;
+
+        if (rollsUsed >= MAX_FREE_REFRESHES || isDevMode) {
+            if (!isDevMode) {
+                updateRefreshDisplay(rollsUsed);
+                return;
+            }
         }
 
-        currentStock = generateRandomStock();
-        document.getElementById('itemsGrid').innerHTML = currentStock.map(createItemCard).join('');
-        recordManualRefresh();
+        // Generate NEW stock
+        const newStock = generateRandomStock();
+        document.getElementById('itemsGrid').innerHTML = newStock.map(createItemCard).join('');
+        
+        // SAVE NEW STATE
+        saveRollState(rollsUsed + 1, newStock);
         
         const overlay = document.getElementById('refreshOverlay');
         overlay.classList.add('show');
         setTimeout(() => {
             overlay.classList.remove('show');
-            updateRefreshDisplay();
+            updateRefreshDisplay(rollsUsed + 1);
         }, 1500);
         
-        console.log("🔄 SPACEBAR REFRESH: New stock generated!");
+        console.log(`🔄 REROLL ${rollsUsed + 1}/${MAX_FREE_REFRESHES} - Stock saved!`);
     }
 
     // ALL OTHER FUNCTIONS (unchanged)
@@ -985,9 +977,6 @@
             }
         }
 
-        const rarityCount = {};
-        stock.forEach(item => rarityCount[item.rarity] = (rarityCount[item.rarity] || 0) + 1);
-        console.log(`🎲 Stock Generated: ${stock.length} items`, rarityCount);
         return stock;
     }
 
@@ -1135,7 +1124,7 @@
             keyInput.value = '';
             keyInput.placeholder = 'Dev Mode Active!';
             document.getElementById('devOverride').style.boxShadow = '0 0 40px #00ff7f';
-            updateRefreshDisplay();
+            updateRefreshDisplay(loadRollState().rollsUsed);
             playSuccessSound();
             setTimeout(toggleDevPanel, 1500);
         } else {
@@ -1198,7 +1187,6 @@
 
     // INITIALIZE
     window.addEventListener('load', loadLootTable);
-    setInterval(updateRefreshDisplay, 60000);
 </script>
 </body>
 </html>

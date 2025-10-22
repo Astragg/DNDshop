@@ -632,610 +632,625 @@
         <div>New wares appear!</div>
     </div>
 
-    <script>
-        // VERSION WATERMARK SYSTEM
-        const SHOP_VERSION = "v2.1.5";
-        const STORAGE_KEY = 'shopVersion';
+ <script>
+    // VERSION WATERMARK SYSTEM
+    const SHOP_VERSION = "v2.1.6"; // Updated version
+    const STORAGE_KEY = 'shopVersion';
 
-        // WEBHOOK CONFIG
-        const WEBHOOK_URL = 'https://discord.com/api/webhooks/1429997152645415104/4dlKg8Gf1ca43BJ57SAYYfqjkslR_RtLjiasDRvrnAPXRi1kG4iG_8CkKw9QV3yhalPS';
+    // WEBHOOK CONFIG
+    const WEBHOOK_URL = 'https://discord.com/api/webhooks/1429997152645415104/4dlKg8Gf1ca43BJ57SAYYfqjkslR_RtLjiasDRvrnAPXRi1kG4iG_8CkKw9QV3yhalPS';
 
-        // GLOBAL VARIABLES
-        let itemTemplates = [];
-        let currentStock = [];
-        let playerWealth = { pp: 0, gp: 0, sp: 0, cp: 0 };
-        let playerName = '';
-        let isDevMode = false;
-        const DEV_KEY = "WARDEN69";
-        const MAX_REFRESHES = 2;
-        const REFRESH_WINDOW = 60 * 60 * 1000;
+    // GLOBAL VARIABLES
+    let itemTemplates = [];
+    let currentStock = [];
+    let playerWealth = { pp: 0, gp: 0, sp: 0, cp: 0 };
+    let playerName = '';
+    let isDevMode = false;
+    const DEV_KEY = "WARDEN69";
+    const MAX_REFRESHES = 2;
+    const REFRESH_WINDOW = 60 * 60 * 1000;
 
-        // WEBHOOK PURCHASE NOTIFICATION
-        async function sendPurchaseToWebhook(item, quantity) {
-            if (!playerName) return;
-            const totalCost = (item.price.pp || 0) * 10 + (item.price.gp || 0) + (item.price.sp || 0) * 0.1 + (item.price.cp || 0) * 0.01;
-            const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
-            const payload = {
-                embeds: [{
-                    title: "🛒 Purchase Alert",
-                    color: 0xFFD700,
-                    fields: [
-                        { name: "Player", value: playerName, inline: true },
-                        { name: "Item", value: `${item.name} (x${quantity})`, inline: true },
-                        { name: "Cost", value: `${totalCost.toFixed(2)} gp`, inline: true },
-                        { name: "Time", value: timestamp, inline: false }
-                    ],
-                    footer: { text: `The Black Emporium | ${SHOP_VERSION}` }
-                }]
-            };
+    // *** NEW: Track if this is INITIAL LOAD vs MANUAL REFRESH ***
+    let isInitialLoad = true;
 
-            try {
-                await fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                console.log(`✅ Sent webhook for ${playerName}'s purchase of ${item.name}`);
-            } catch (error) {
-                console.error('❌ Webhook failed:', error);
-            }
-        }
-
-        // VERSION WATERMARK FUNCTIONS
-        function checkVersionAndShowWatermark() {
-            const lastVersion = localStorage.getItem(STORAGE_KEY);
-            const watermark = document.getElementById('versionWatermark');
-            
-            watermark.innerHTML = `🛒 SHOP ${SHOP_VERSION} LOADED`;
-            watermark.style.display = 'inline-block';
-            watermark.className = 'version-watermark';
-            
-            if (lastVersion === SHOP_VERSION) {
-                watermark.innerHTML += ` ✅`;
-                watermark.style.color = '#ffd700';
-            } else {
-                watermark.innerHTML += ` 🎉 UPDATED!`;
-                watermark.style.color = '#00ff7f';
-                watermark.classList.add('version-updated');
-                localStorage.setItem(STORAGE_KEY, SHOP_VERSION);
-                playVersionUpdateSound();
-            }
-        }
-
-        function playVersionUpdateSound() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                const notes = [523, 659, 784];
-                notes.forEach((freq, i) => {
-                    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime + i * 0.2);
-                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime + i * 0.2);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.2 + 0.15);
-                });
-                oscillator.start();
-                oscillator.stop(audioContext.currentTime + 0.6);
-            } catch(e) {}
-        }
-
-        // PLAYER NAME FUNCTIONS
-        function loadPlayerName() {
-            const saved = localStorage.getItem('daShopPlayerName');
-            if (saved) {
-                playerName = saved;
-                document.getElementById('playerNameInput').value = playerName;
-            }
-        }
-
-        function savePlayerName() {
-            localStorage.setItem('daShopPlayerName', playerName);
-        }
-
-        function promptForPlayerName() {
-            if (!playerName) {
-                const nameInput = document.getElementById('playerNameInput');
-                nameInput.focus();
-                nameInput.placeholder = 'Please enter your name!';
-                nameInput.style.borderColor = '#ff4757';
-                setTimeout(() => {
-                    nameInput.placeholder = 'Enter Name';
-                    nameInput.style.borderColor = '#8b4513';
-                }, 2000);
-                return false;
-            }
-            return true;
-        }
-
-        // LOAD LOOT TABLE
-        async function loadLootTable() {
-            try {
-                const response = await fetch('loot-table.json');
-                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                const data = await response.json();
-                itemTemplates = data.itemTemplates;
-                if (itemTemplates.length === 0) throw new Error('Loot table is empty!');
-                console.log(`✅ Loaded ${itemTemplates.length} items from loot-table.json`);
-                initializeShop();
-            } catch (error) {
-                console.error('❌ Failed to load loot table:', error);
-                showError(`Failed to load loot table: ${error.message}<br><br>Make sure <code>loot-table.json</code> exists in the same folder!`);
-            }
-        }
-
-        function showError(message) {
-            const loadingScreen = document.getElementById('loadingScreen');
-            const errorMsg = document.getElementById('errorMessage');
-            errorMsg.innerHTML = message;
-            errorMsg.style.display = 'block';
-            loadingScreen.classList.remove('hidden');
-        }
-
-        function initializeShop() {
-            setupDevAccess();
-            setupCurrency();
-            loadWealth();
-            loadPlayerName();
-            updateRefreshDisplay();
-            refreshStock();
-            startParticles();
-            checkVersionAndShowWatermark();
-            promptForPlayerName();
-            setTimeout(() => {
-                document.getElementById('loadingScreen').classList.add('hidden');
-            }, 1000);
-        }
-
-        // DEV MODE FUNCTIONS
-        function toggleDevPanel() {
-            document.getElementById('devOverride').classList.toggle('show');
-        }
-
-        function activateDevMode() {
-            const keyInput = document.getElementById('devKeyInput');
-            const status = document.getElementById('devStatus');
-            const enteredKey = keyInput.value.trim();
-
-            if (enteredKey === DEV_KEY) {
-                isDevMode = true;
-                status.innerHTML = '<span class="dev-active">ONLINE ⚡ Unlimited!</span>';
-                keyInput.value = '';
-                keyInput.placeholder = 'Dev Mode Active!';
-                document.getElementById('devOverride').style.boxShadow = '0 0 40px #00ff7f';
-                updateRefreshDisplay();
-                playSuccessSound();
-                setTimeout(toggleDevPanel, 1500);
-            } else {
-                status.innerHTML = '<span class="dev-inactive">WRONG KEY ❌</span>';
-                keyInput.value = '';
-                setTimeout(() => {
-                    status.innerHTML = 'Dev Mode: <span class="dev-inactive">OFF</span>';
-                }, 2000);
-            }
-        }
-
-        function playSuccessSound() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                oscillator.frequency.value = 800;
-                oscillator.type = 'sine';
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.5);
-            } catch(e) {}
-        }
-
-        function setupDevAccess() {
-            document.getElementById('devToggleBtn').addEventListener('click', toggleDevPanel);
-            let titleClickCount = 0;
-            document.getElementById('shopTitle').addEventListener('click', function() {
-                titleClickCount++;
-                if (titleClickCount === 3) {
-                    toggleDevPanel();
-                    titleClickCount = 0;
-                    this.style.color = '#00ff7f';
-                    setTimeout(() => this.style.color = '#ffd700', 1000);
-                }
-                setTimeout(() => titleClickCount = 0, 2000);
-            });
-        }
-
-        // CURRENCY & PLAYER NAME FUNCTIONS
-        function setupCurrency() {
-            document.querySelectorAll('.currency-group input').forEach(input => {
-                input.addEventListener('input', updateWealthFromInputs);
-            });
-            document.getElementById('playerNameInput').addEventListener('input', () => {
-                playerName = document.getElementById('playerNameInput').value.trim();
-                savePlayerName();
-            });
-        }
-
-        function getTotalWealth() {
-            return playerWealth.pp * 10 + playerWealth.gp + playerWealth.sp * 0.1 + playerWealth.cp * 0.01;
-        }
-
-        function canAffordItem(price) {
-            for (let [currency, amount] of Object.entries(price)) {
-                if (playerWealth[currency] < amount) return false;
-            }
-            return true;
-        }
-
-        function deductCurrency(price) {
-            for (let [currency, amount] of Object.entries(price)) {
-                playerWealth[currency] -= amount;
-            }
-        }
-
-        function loadWealth() {
-            const saved = localStorage.getItem('daShopWealth');
-            if (saved) {
-                playerWealth = JSON.parse(saved);
-                document.getElementById('ppInput').value = playerWealth.pp;
-                document.getElementById('gpInput').value = playerWealth.gp;
-                document.getElementById('spInput').value = playerWealth.sp;
-                document.getElementById('cpInput').value = playerWealth.cp;
-            }
-            updateTotalWealth();
-        }
-
-        function saveWealth() {
-            localStorage.setItem('daShopWealth', JSON.stringify(playerWealth));
-        }
-
-        function updateTotalWealth() {
-            const total = getTotalWealth();
-            document.getElementById('totalWealth').textContent = `Total: ${total.toFixed(2)} gp`;
-        }
-
-        function updateWealthFromInputs() {
-            playerWealth.pp = parseInt(document.getElementById('ppInput').value) || 0;
-            playerWealth.gp = parseInt(document.getElementById('gpInput').value) || 0;
-            playerWealth.sp = parseInt(document.getElementById('spInput').value) || 0;
-            playerWealth.cp = parseInt(document.getElementById('cpInput').value) || 0;
-            saveWealth();
-            updateTotalWealth();
-            refreshItemButtons();
-        }
-
-        // REFRESH SYSTEM
-        function loadRefreshHistory() {
-            return JSON.parse(localStorage.getItem('daShopRefreshes') || '[]');
-        }
-
-        function saveRefreshHistory(history) {
-            localStorage.setItem('daShopRefreshes', JSON.stringify(history));
-        }
-
-        function getAvailableRefreshes() {
-            if (isDevMode) return Infinity;
-            const history = loadRefreshHistory();
-            const now = Date.now();
-            const validRefreshes = history.filter(ts => now - ts < REFRESH_WINDOW);
-            return MAX_REFRESHES - validRefreshes.length;
-        }
-
-        function canRefresh() {
-            return isDevMode || getAvailableRefreshes() > 0;
-        }
-
-        function recordRefresh() {
-            if (isDevMode) return;
-            const history = loadRefreshHistory();
-            history.push(Date.now());
-            saveRefreshHistory(history);
-        }
-
-        function updateRefreshDisplay() {
-            const available = getAvailableRefreshes();
-            const refreshInfo = document.getElementById('refreshInfo');
-
-            if (isDevMode) {
-                refreshInfo.innerHTML = `
-                    💰 Press <strong>SPACEBAR</strong> to refresh stock 💰
-                    <div class="refresh-limit dev-bypass">
-                        <span class="refresh-count">🔮 DEV MODE ACTIVE</span><br>
-                        <small>Unlimited Refreshes!</small>
-                    </div>
-                `;
-                return;
-            }
-
-            if (available > 0) {
-                refreshInfo.innerHTML = `
-                    💰 Press <strong>SPACEBAR</strong> to refresh stock 💰
-                    <div class="refresh-limit">
-                        <span id="refreshCount">${available}/${MAX_REFRESHES}</span> refreshes remaining this hour
-                    </div>
-                `;
-            } else {
-                const nextRefresh = getNextRefreshTime();
-                if (nextRefresh) {
-                    const timeLeft = Math.ceil((nextRefresh - Date.now()) / 1000);
-                    refreshInfo.innerHTML = `
-                        ⏳ <strong>Refresh Limit Reached</strong> ⏳
-                        <div class="refresh-limit warning">
-                            <span class="cooldown-timer">${formatTimeLeft(timeLeft)} until next refresh</span>
-                        </div>
-                    `;
-                    startCountdown(nextRefresh);
-                }
-            }
-        }
-
-        function getNextRefreshTime() {
-            if (isDevMode) return null;
-            const history = loadRefreshHistory();
-            const now = Date.now();
-            const validRefreshes = history.filter(ts => now - ts < REFRESH_WINDOW);
-            if (validRefreshes.length < MAX_REFRESHES) return null;
-            return validRefreshes[0] + REFRESH_WINDOW;
-        }
-
-        function formatTimeLeft(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            return `${mins}m ${secs}s`;
-        }
-
-        let countdownInterval = null;
-        function startCountdown(nextRefreshTime) {
-            if (countdownInterval) clearInterval(countdownInterval);
-            countdownInterval = setInterval(() => {
-                const timeLeft = Math.ceil((nextRefreshTime - Date.now()) / 1000);
-                if (timeLeft <= 0) {
-                    clearInterval(countdownInterval);
-                    updateRefreshDisplay();
-                    return;
-                }
-                document.querySelector('.cooldown-timer').textContent = formatTimeLeft(timeLeft);
-            }, 1000);
-        }
-
-        // SHOP FUNCTIONS - UPDATED SPAWN SYSTEM
-        function generateRandomStock() {
-            const stock = [];
-            const stockSize = 8 + Math.floor(Math.random() * 4); // 8-11 items
-            const commons = itemTemplates.filter(item => item.rarity === 'common');
-            const nonCommons = itemTemplates.filter(item => item.rarity !== 'common');
-            let legendaryCount = 0;
-
-            // Step 1: Guarantee 5 common items
-            const shuffledCommons = commons.sort(() => Math.random() - 0.5);
-            const selectedCommons = shuffledCommons.slice(0, Math.min(5, commons.length));
-            selectedCommons.forEach(itemTemplate => {
-                const item = {
-                    ...itemTemplate,
-                    id: Date.now() + Math.random(),
-                    stock: Math.floor(Math.random() * (itemTemplate.stockRange[1] - itemTemplate.stockRange[0] + 1)) + itemTemplate.stockRange[0]
-                };
-                stock.push(item);
-            });
-
-            // Step 2: Fill remaining slots with weighted selection
-            const remainingSlots = stockSize - stock.length;
-            if (remainingSlots > 0) {
-                const rarityWeights = {
-                    legendary: 1,
-                    epic: 5,
-                    rare: 10,
-                    uncommon: 15,
-                    common: 20
-                };
-
-                const weightedItems = itemTemplates.map(item => ({
-                    item,
-                    weight: rarityWeights[item.rarity] || 10
-                }));
-                const totalWeight = weightedItems.reduce((sum, { weight }) => sum + weight, 0);
-
-                for (let i = 0; i < remainingSlots; i++) {
-                    const roll = Math.random() * totalWeight;
-                    let cumulativeWeight = 0;
-                    let selectedItem = null;
-
-                    // Try selecting an item
-                    for (let { item, weight } of weightedItems) {
-                        cumulativeWeight += weight;
-                        if (roll <= cumulativeWeight) {
-                            // Check spawnChance and legendary limit
-                            if (Math.random() <= item.spawnChance && (item.rarity !== 'legendary' || legendaryCount < 1)) {
-                                selectedItem = item;
-                                if (item.rarity === 'legendary') legendaryCount++;
-                                break;
-                            }
-                        }
-                    }
-
-                    // Fallback: Try lower rarities if no item selected
-                    if (!selectedItem) {
-                        const fallbacks = [
-                            itemTemplates.filter(item => item.rarity === 'uncommon' && Math.random() <= item.spawnChance),
-                            itemTemplates.filter(item => item.rarity === 'common')
-                        ];
-                        for (let fallbackList of fallbacks) {
-                            if (fallbackList.length > 0) {
-                                selectedItem = fallbackList[Math.floor(Math.random() * fallbackList.length)];
-                                break;
-                            }
-                        }
-                    }
-
-                    // Add selected item to stock
-                    if (selectedItem) {
-                        const item = {
-                            ...selectedItem,
-                            id: Date.now() + i + Math.random(),
-                            stock: Math.floor(Math.random() * (selectedItem.stockRange[1] - selectedItem.stockRange[0] + 1)) + selectedItem.stockRange[0]
-                        };
-                        stock.push(item);
-                    }
-                }
-            }
-
-            // Debug: Log rarity breakdown
-            const rarityCount = {};
-            stock.forEach(item => {
-                rarityCount[item.rarity] = (rarityCount[item.rarity] || 0) + 1;
-            });
-            console.log(`🎲 Stock Generated: ${stock.length} items`);
-            console.log(`📊 Breakdown:`, rarityCount);
-            return stock;
-        }
-
-        const rarityColors = {
-            common: '#c0c0c0',
-            uncommon: '#00ff7f',
-            rare: '#4169e1',
-            epic: '#9932cc',
-            legendary: '#ffd700'
+    // WEBHOOK PURCHASE NOTIFICATION (unchanged)
+    async function sendPurchaseToWebhook(item, quantity) {
+        if (!playerName) return;
+        const totalCost = (item.price.pp || 0) * 10 + (item.price.gp || 0) + (item.price.sp || 0) * 0.1 + (item.price.cp || 0) * 0.01;
+        const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
+        const payload = {
+            embeds: [{
+                title: "🛒 Purchase Alert",
+                color: 0xFFD700,
+                fields: [
+                    { name: "Player", value: playerName, inline: true },
+                    { name: "Item", value: `${item.name} (x${quantity})`, inline: true },
+                    { name: "Cost", value: `${totalCost.toFixed(2)} gp`, inline: true },
+                    { name: "Time", value: timestamp, inline: false }
+                ],
+                footer: { text: `The Black Emporium | ${SHOP_VERSION}` }
+            }]
         };
 
-        function getItemImageStyle(rarity) {
-            const styles = {
-                common: 'linear-gradient(45deg, #8b7355, #a0522d)',
-                uncommon: 'linear-gradient(45deg, #228b22, #32cd32)',
-                rare: 'linear-gradient(45deg, #4169e1, #1e90ff)',
-                epic: 'linear-gradient(45deg, #8a2be2, #9932cc)',
-                legendary: 'linear-gradient(45deg, #ffd700, #ffed4e)'
-            };
-            return styles[rarity] || styles.common;
+        try {
+            await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            console.log(`✅ Sent webhook for ${playerName}'s purchase of ${item.name}`);
+        } catch (error) {
+            console.error('❌ Webhook failed:', error);
         }
+    }
 
-        function formatPrice(price) {
-            let priceHtml = '';
-            for (let [currency, amount] of Object.entries(price)) {
-                if (amount > 0) {
-                    const coinClass = `coin-icon coin-${currency}`;
-                    const coinsToShow = Math.min(amount, 5);
-                    priceHtml += `<span style="display: flex; align-items: center; gap: 3px;">
-                        ${Array(coinsToShow).fill(0).map(() => `<span class="${coinClass}"></span>`).join('')}
-                        ${amount > 5 ? `<span style="font-weight: bold;">+${amount-5}</span>` : `<span style="font-weight: bold;">${amount}</span>`}
-                        <span style="font-size: 0.9rem; margin-left: 3px;">${currency.toUpperCase()}</span>
-                    </span>`;
-                }
+    // VERSION WATERMARK FUNCTIONS (unchanged)
+    function checkVersionAndShowWatermark() {
+        const lastVersion = localStorage.getItem(STORAGE_KEY);
+        const watermark = document.getElementById('versionWatermark');
+        
+        watermark.innerHTML = `🛒 SHOP ${SHOP_VERSION} LOADED`;
+        watermark.style.display = 'inline-block';
+        watermark.className = 'version-watermark';
+        
+        if (lastVersion === SHOP_VERSION) {
+            watermark.innerHTML += ` ✅`;
+            watermark.style.color = '#ffd700';
+        } else {
+            watermark.innerHTML += ` 🎉 FIXED REFRESH!`;
+            watermark.style.color = '#00ff7f';
+            watermark.classList.add('version-updated');
+            localStorage.setItem(STORAGE_KEY, SHOP_VERSION);
+            playVersionUpdateSound();
+        }
+    }
+
+    function playVersionUpdateSound() {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            const notes = [523, 659, 784];
+            notes.forEach((freq, i) => {
+                oscillator.frequency.setValueAtTime(freq, audioContext.currentTime + i * 0.2);
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime + i * 0.2);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.2 + 0.15);
+            });
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.6);
+        } catch(e) {}
+    }
+
+    // PLAYER NAME FUNCTIONS (unchanged)
+    function loadPlayerName() {
+        const saved = localStorage.getItem('daShopPlayerName');
+        if (saved) {
+            playerName = saved;
+            document.getElementById('playerNameInput').value = playerName;
+        }
+    }
+
+    function savePlayerName() {
+        localStorage.setItem('daShopPlayerName', playerName);
+    }
+
+    function promptForPlayerName() {
+        if (!playerName) {
+            const nameInput = document.getElementById('playerNameInput');
+            nameInput.focus();
+            nameInput.placeholder = 'Please enter your name!';
+            nameInput.style.borderColor = '#ff4757';
+            setTimeout(() => {
+                nameInput.placeholder = 'Enter Name';
+                nameInput.style.borderColor = '#8b4513';
+            }, 2000);
+            return false;
+        }
+        return true;
+    }
+
+    // LOAD LOOT TABLE (unchanged)
+    async function loadLootTable() {
+        try {
+            const response = await fetch('loot-table.json');
+            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const data = await response.json();
+            itemTemplates = data.itemTemplates;
+            if (itemTemplates.length === 0) throw new Error('Loot table is empty!');
+            console.log(`✅ Loaded ${itemTemplates.length} items from loot-table.json`);
+            initializeShop();
+        } catch (error) {
+            console.error('❌ Failed to load loot table:', error);
+            showError(`Failed to load loot table: ${error.message}<br><br>Make sure <code>loot-table.json</code> exists in the same folder!`);
+        }
+    }
+
+    function showError(message) {
+        const loadingScreen = document.getElementById('loadingScreen');
+        const errorMsg = document.getElementById('errorMessage');
+        errorMsg.innerHTML = message;
+        errorMsg.style.display = 'block';
+        loadingScreen.classList.remove('hidden');
+    }
+
+    // *** FIXED INITIALIZE SHOP ***
+    function initializeShop() {
+        setupDevAccess();
+        setupCurrency();
+        loadWealth();
+        loadPlayerName();
+        updateRefreshDisplay();
+        
+        // *** FIXED: Only generate stock on INITIAL LOAD, NO REFRESH COUNT USED ***
+        if (isInitialLoad) {
+            console.log("🎲 INITIAL LOAD: Generating stock (FREE - no refresh used)");
+            currentStock = generateRandomStock();
+            document.getElementById('itemsGrid').innerHTML = currentStock.map(createItemCard).join('');
+            isInitialLoad = false; // Only once!
+        }
+        
+        startParticles();
+        checkVersionAndShowWatermark();
+        promptForPlayerName();
+        setTimeout(() => {
+            document.getElementById('loadingScreen').classList.add('hidden');
+        }, 1000);
+    }
+
+    // DEV MODE FUNCTIONS (unchanged)
+    function toggleDevPanel() {
+        document.getElementById('devOverride').classList.toggle('show');
+    }
+
+    function activateDevMode() {
+        const keyInput = document.getElementById('devKeyInput');
+        const status = document.getElementById('devStatus');
+        const enteredKey = keyInput.value.trim();
+
+        if (enteredKey === DEV_KEY) {
+            isDevMode = true;
+            status.innerHTML = '<span class="dev-active">ONLINE ⚡ Unlimited!</span>';
+            keyInput.value = '';
+            keyInput.placeholder = 'Dev Mode Active!';
+            document.getElementById('devOverride').style.boxShadow = '0 0 40px #00ff7f';
+            updateRefreshDisplay();
+            playSuccessSound();
+            setTimeout(toggleDevPanel, 1500);
+        } else {
+            status.innerHTML = '<span class="dev-inactive">WRONG KEY ❌</span>';
+            keyInput.value = '';
+            setTimeout(() => {
+                status.innerHTML = 'Dev Mode: <span class="dev-inactive">OFF</span>';
+            }, 2000);
+        }
+    }
+
+    function playSuccessSound() {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        } catch(e) {}
+    }
+
+    function setupDevAccess() {
+        document.getElementById('devToggleBtn').addEventListener('click', toggleDevPanel);
+        let titleClickCount = 0;
+        document.getElementById('shopTitle').addEventListener('click', function() {
+            titleClickCount++;
+            if (titleClickCount === 3) {
+                toggleDevPanel();
+                titleClickCount = 0;
+                this.style.color = '#00ff7f';
+                setTimeout(() => this.style.color = '#ffd700', 1000);
             }
-            return priceHtml;
-        }
+            setTimeout(() => titleClickCount = 0, 2000);
+        });
+    }
 
-        function createItemCard(item) {
-            const rarityColor = rarityColors[item.rarity] || '#ffffff';
-            const imageStyle = getItemImageStyle(item.rarity);
-            const canAfford = canAffordItem(item.price);
-            return `
-                <div class="item-card" style="--rarity-color: ${rarityColor}" data-item-id="${item.id}">
-                    <div class="item-image" style="background: ${imageStyle}">
-                        <div style="position: absolute; top: 10px; right: 10px; 
-                                   background: ${rarityColor}; color: #000; 
-                                   padding: 4px 8px; border-radius: 12px; 
-                                   font-size: 0.8rem; font-weight: bold;">
-                            ${item.rarity.toUpperCase()}
-                        </div>
-                    </div>
-                    <div class="item-name">${item.name}</div>
-                    <div class="item-description">${item.description}</div>
-                    <div class="item-stats">
-                        ${item.stats.map(stat => `<span class="stat-tag">${stat}</span>`).join('')}
-                    </div>
-                    <div class="stock-indicator">${item.stock} in stock</div>
-                    <div class="item-price" id="price-${item.id}">
-                        ${formatPrice(item.price)}
-                    </div>
-                    <button class="buy-button ${canAfford ? '' : 'insufficient-funds'}" 
-                            onclick="buyItem(${item.id})" ${!canAfford ? 'disabled' : ''}>
-                        ${canAfford ? `Purchase (${item.stock} left)` : 'Need Exact Coins'}
-                    </button>
+    // CURRENCY FUNCTIONS (unchanged)
+    function setupCurrency() {
+        document.querySelectorAll('.currency-group input').forEach(input => {
+            input.addEventListener('input', updateWealthFromInputs);
+        });
+        document.getElementById('playerNameInput').addEventListener('input', () => {
+            playerName = document.getElementById('playerNameInput').value.trim();
+            savePlayerName();
+        });
+    }
+
+    function getTotalWealth() {
+        return playerWealth.pp * 10 + playerWealth.gp + playerWealth.sp * 0.1 + playerWealth.cp * 0.01;
+    }
+
+    function canAffordItem(price) {
+        for (let [currency, amount] of Object.entries(price)) {
+            if (playerWealth[currency] < amount) return false;
+        }
+        return true;
+    }
+
+    function deductCurrency(price) {
+        for (let [currency, amount] of Object.entries(price)) {
+            playerWealth[currency] -= amount;
+        }
+    }
+
+    function loadWealth() {
+        const saved = localStorage.getItem('daShopWealth');
+        if (saved) {
+            playerWealth = JSON.parse(saved);
+            document.getElementById('ppInput').value = playerWealth.pp;
+            document.getElementById('gpInput').value = playerWealth.gp;
+            document.getElementById('spInput').value = playerWealth.sp;
+            document.getElementById('cpInput').value = playerWealth.cp;
+        }
+        updateTotalWealth();
+    }
+
+    function saveWealth() {
+        localStorage.setItem('daShopWealth', JSON.stringify(playerWealth));
+    }
+
+    function updateTotalWealth() {
+        const total = getTotalWealth();
+        document.getElementById('totalWealth').textContent = `Total: ${total.toFixed(2)} gp`;
+    }
+
+    function updateWealthFromInputs() {
+        playerWealth.pp = parseInt(document.getElementById('ppInput').value) || 0;
+        playerWealth.gp = parseInt(document.getElementById('gpInput').value) || 0;
+        playerWealth.sp = parseInt(document.getElementById('spInput').value) || 0;
+        playerWealth.cp = parseInt(document.getElementById('cpInput').value) || 0;
+        saveWealth();
+        updateTotalWealth();
+        refreshItemButtons();
+    }
+
+    // *** FIXED REFRESH SYSTEM ***
+    function loadRefreshHistory() {
+        return JSON.parse(localStorage.getItem('daShopRefreshes') || '[]');
+    }
+
+    function saveRefreshHistory(history) {
+        localStorage.setItem('daShopRefreshes', JSON.stringify(history));
+    }
+
+    function getAvailableRefreshes() {
+        if (isDevMode) return Infinity;
+        const history = loadRefreshHistory();
+        const now = Date.now();
+        const validRefreshes = history.filter(ts => now - ts < REFRESH_WINDOW);
+        return MAX_REFRESHES - validRefreshes.length;
+    }
+
+    function canRefresh() {
+        return isDevMode || getAvailableRefreshes() > 0;
+    }
+
+    // *** FIXED: Only record MANUAL refreshes, not initial load ***
+    function recordRefresh() {
+        if (isDevMode) return;
+        const history = loadRefreshHistory();
+        history.push(Date.now());
+        saveRefreshHistory(history);
+        console.log("🔄 MANUAL REFRESH RECORDED - rolls used:", MAX_REFRESHES - getAvailableRefreshes() + 1);
+    }
+
+    function updateRefreshDisplay() {
+        const available = getAvailableRefreshes();
+        const refreshInfo = document.getElementById('refreshInfo');
+
+        if (isDevMode) {
+            refreshInfo.innerHTML = `
+                💰 Press <strong>SPACEBAR</strong> to refresh stock 💰
+                <div class="refresh-limit dev-bypass">
+                    <span class="refresh-count">🔮 DEV MODE ACTIVE</span><br>
+                    <small>Unlimited Refreshes!</small>
                 </div>
             `;
+            return;
         }
 
-        function refreshItemButtons() {
-            currentStock.forEach(item => {
-                const canAfford = canAffordItem(item.price);
-                const button = document.querySelector(`[onclick="buyItem(${item.id})"]`);
-                if (button) {
-                    button.textContent = canAfford ? `Purchase (${item.stock} left)` : 'Need Exact Coins';
-                    button.disabled = !canAfford;
-                    button.className = `buy-button ${canAfford ? '' : 'insufficient-funds'}`;
-                }
-            });
+        if (available > 0) {
+            refreshInfo.innerHTML = `
+                💰 Press <strong>SPACEBAR</strong> to refresh stock 💰
+                <div class="refresh-limit">
+                    <span id="refreshCount">${available}/${MAX_REFRESHES}</span> refreshes remaining this hour
+                </div>
+            `;
+        } else {
+            const nextRefresh = getNextRefreshTime();
+            if (nextRefresh) {
+                const timeLeft = Math.ceil((nextRefresh - Date.now()) / 1000);
+                refreshInfo.innerHTML = `
+                    ⏳ <strong>Refresh Limit Reached</strong> ⏳
+                    <div class="refresh-limit warning">
+                        <span class="cooldown-timer">${formatTimeLeft(timeLeft)} until next refresh</span>
+                    </div>
+                `;
+                startCountdown(nextRefresh);
+            }
         }
+    }
 
-        function refreshStock() {
-            if (!canRefresh()) {
+    function getNextRefreshTime() {
+        if (isDevMode) return null;
+        const history = loadRefreshHistory();
+        const now = Date.now();
+        const validRefreshes = history.filter(ts => now - ts < REFRESH_WINDOW);
+        if (validRefreshes.length < MAX_REFRESHES) return null;
+        return validRefreshes[0] + REFRESH_WINDOW;
+    }
+
+    function formatTimeLeft(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}m ${secs}s`;
+    }
+
+    let countdownInterval = null;
+    function startCountdown(nextRefreshTime) {
+        if (countdownInterval) clearInterval(countdownInterval);
+        countdownInterval = setInterval(() => {
+            const timeLeft = Math.ceil((nextRefreshTime - Date.now()) / 1000);
+            if (timeLeft <= 0) {
+                clearInterval(countdownInterval);
                 updateRefreshDisplay();
                 return;
             }
-            currentStock = generateRandomStock();
-            document.getElementById('itemsGrid').innerHTML = currentStock.map(createItemCard).join('');
-            recordRefresh();
-            const overlay = document.getElementById('refreshOverlay');
-            overlay.classList.add('show');
-            setTimeout(() => {
-                overlay.classList.remove('show');
-                updateRefreshDisplay();
-            }, 1500);
+            document.querySelector('.cooldown-timer').textContent = formatTimeLeft(timeLeft);
+        }, 1000);
+    }
+
+    // *** FIXED REFRESH STOCK - Only charges for MANUAL refresh ***
+    function refreshStock() {
+        if (!canRefresh()) {
+            updateRefreshDisplay();
+            return;
         }
 
-        function buyItem(itemId) {
-            const item = currentStock.find(i => i.id === itemId);
-            if (item && item.stock > 0 && canAffordItem(item.price)) {
-                if (!promptForPlayerName()) return;
-                deductCurrency(item.price);
-                document.getElementById('ppInput').value = playerWealth.pp;
-                document.getElementById('gpInput').value = playerWealth.gp;
-                document.getElementById('spInput').value = playerWealth.sp;
-                document.getElementById('cpInput').value = playerWealth.cp;
-                saveWealth();
-                updateTotalWealth();
-                item.stock--;
-                const card = document.querySelector(`[data-item-id="${itemId}"]`);
-                const button = card.querySelector('.buy-button');
-                const stockIndicator = card.querySelector('.stock-indicator');
-                stockIndicator.textContent = `${item.stock} in stock`;
-                button.textContent = item.stock === 0 ? 'SOLD OUT' : `Purchase (${item.stock} left)`;
-                if (item.stock === 0) button.disabled = true;
-                card.style.boxShadow = '0 0 30px #00ff00';
-                sendPurchaseToWebhook(item, 1);
-                setTimeout(() => {
-                    card.style.boxShadow = '';
-                    refreshItemButtons();
-                }, 500);
-            }
-        }
+        // *** Generate new stock ONLY for MANUAL refresh ***
+        currentStock = generateRandomStock();
+        document.getElementById('itemsGrid').innerHTML = currentStock.map(createItemCard).join('');
+        
+        // *** Record ONLY MANUAL refreshes ***
+        recordRefresh();
+        
+        const overlay = document.getElementById('refreshOverlay');
+        overlay.classList.add('show');
+        setTimeout(() => {
+            overlay.classList.remove('show');
+            updateRefreshDisplay();
+        }, 1500);
+        
+        console.log("🔄 MANUAL REFRESH: New stock generated!");
+    }
 
-        function startParticles() {
-            setInterval(() => {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.animationDuration = (4 + Math.random() * 4) + 's';
-                particle.style.animationDelay = Math.random() * 2 + 's';
-                document.body.appendChild(particle);
-                setTimeout(() => particle.remove(), 8000);
-            }, 1000);
-        }
+    // SHOP FUNCTIONS (rest unchanged)
+    function generateRandomStock() {
+        const stock = [];
+        const stockSize = 8 + Math.floor(Math.random() * 4);
+        const commons = itemTemplates.filter(item => item.rarity === 'common');
+        const nonCommons = itemTemplates.filter(item => item.rarity !== 'common');
+        let legendaryCount = 0;
 
-        // EVENT LISTENERS
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                e.preventDefault();
-                refreshStock();
-            }
+        const shuffledCommons = commons.sort(() => Math.random() - 0.5);
+        const selectedCommons = shuffledCommons.slice(0, Math.min(5, commons.length));
+        selectedCommons.forEach(itemTemplate => {
+            const item = {
+                ...itemTemplate,
+                id: Date.now() + Math.random(),
+                stock: Math.floor(Math.random() * (itemTemplate.stockRange[1] - itemTemplate.stockRange[0] + 1)) + itemTemplate.stockRange[0]
+            };
+            stock.push(item);
         });
 
-        // INITIALIZE
-        window.addEventListener('load', loadLootTable);
+        const remainingSlots = stockSize - stock.length;
+        if (remainingSlots > 0) {
+            const rarityWeights = {
+                legendary: 1,
+                epic: 5,
+                rare: 10,
+                uncommon: 15,
+                common: 20
+            };
 
-        // Auto-refresh display every minute
-        setInterval(updateRefreshDisplay, 60000);
-    </script>
+            const weightedItems = itemTemplates.map(item => ({
+                item,
+                weight: rarityWeights[item.rarity] || 10
+            }));
+            const totalWeight = weightedItems.reduce((sum, { weight }) => sum + weight, 0);
+
+            for (let i = 0; i < remainingSlots; i++) {
+                const roll = Math.random() * totalWeight;
+                let cumulativeWeight = 0;
+                let selectedItem = null;
+
+                for (let { item, weight } of weightedItems) {
+                    cumulativeWeight += weight;
+                    if (roll <= cumulativeWeight) {
+                        if (Math.random() <= item.spawnChance && (item.rarity !== 'legendary' || legendaryCount < 1)) {
+                            selectedItem = item;
+                            if (item.rarity === 'legendary') legendaryCount++;
+                            break;
+                        }
+                    }
+                }
+
+                if (!selectedItem) {
+                    const fallbacks = [
+                        itemTemplates.filter(item => item.rarity === 'uncommon' && Math.random() <= item.spawnChance),
+                        itemTemplates.filter(item => item.rarity === 'common')
+                    ];
+                    for (let fallbackList of fallbacks) {
+                        if (fallbackList.length > 0) {
+                            selectedItem = fallbackList[Math.floor(Math.random() * fallbackList.length)];
+                            break;
+                        }
+                    }
+                }
+
+                if (selectedItem) {
+                    const item = {
+                        ...selectedItem,
+                        id: Date.now() + i + Math.random(),
+                        stock: Math.floor(Math.random() * (selectedItem.stockRange[1] - selectedItem.stockRange[0] + 1)) + selectedItem.stockRange[0]
+                    };
+                    stock.push(item);
+                }
+            }
+        }
+
+        const rarityCount = {};
+        stock.forEach(item => {
+            rarityCount[item.rarity] = (rarityCount[item.rarity] || 0) + 1;
+        });
+        console.log(`🎲 Stock Generated: ${stock.length} items`);
+        console.log(`📊 Breakdown:`, rarityCount);
+        return stock;
+    }
+
+    const rarityColors = {
+        common: '#c0c0c0',
+        uncommon: '#00ff7f',
+        rare: '#4169e1',
+        epic: '#9932cc',
+        legendary: '#ffd700'
+    };
+
+    function getItemImageStyle(rarity) {
+        const styles = {
+            common: 'linear-gradient(45deg, #8b7355, #a0522d)',
+            uncommon: 'linear-gradient(45deg, #228b22, #32cd32)',
+            rare: 'linear-gradient(45deg, #4169e1, #1e90ff)',
+            epic: 'linear-gradient(45deg, #8a2be2, #9932cc)',
+            legendary: 'linear-gradient(45deg, #ffd700, #ffed4e)'
+        };
+        return styles[rarity] || styles.common;
+    }
+
+    function formatPrice(price) {
+        let priceHtml = '';
+        for (let [currency, amount] of Object.entries(price)) {
+            if (amount > 0) {
+                const coinClass = `coin-icon coin-${currency}`;
+                const coinsToShow = Math.min(amount, 5);
+                priceHtml += `<span style="display: flex; align-items: center; gap: 3px;">
+                    ${Array(coinsToShow).fill(0).map(() => `<span class="${coinClass}"></span>`).join('')}
+                    ${amount > 5 ? `<span style="font-weight: bold;">+${amount-5}</span>` : `<span style="font-weight: bold;">${amount}</span>`}
+                    <span style="font-size: 0.9rem; margin-left: 3px;">${currency.toUpperCase()}</span>
+                </span>`;
+            }
+        }
+        return priceHtml;
+    }
+
+    function createItemCard(item) {
+        const rarityColor = rarityColors[item.rarity] || '#ffffff';
+        const imageStyle = getItemImageStyle(item.rarity);
+        const canAfford = canAffordItem(item.price);
+        return `
+            <div class="item-card" style="--rarity-color: ${rarityColor}" data-item-id="${item.id}">
+                <div class="item-image" style="background: ${imageStyle}">
+                    <div style="position: absolute; top: 10px; right: 10px; 
+                               background: ${rarityColor}; color: #000; 
+                               padding: 4px 8px; border-radius: 12px; 
+                               font-size: 0.8rem; font-weight: bold;">
+                        ${item.rarity.toUpperCase()}
+                    </div>
+                </div>
+                <div class="item-name">${item.name}</div>
+                <div class="item-description">${item.description}</div>
+                <div class="item-stats">
+                    ${item.stats.map(stat => `<span class="stat-tag">${stat}</span>`).join('')}
+                </div>
+                <div class="stock-indicator">${item.stock} in stock</div>
+                <div class="item-price" id="price-${item.id}">
+                    ${formatPrice(item.price)}
+                </div>
+                <button class="buy-button ${canAfford ? '' : 'insufficient-funds'}" 
+                        onclick="buyItem(${item.id})" ${!canAfford ? 'disabled' : ''}>
+                    ${canAfford ? `Purchase (${item.stock} left)` : 'Need Exact Coins'}
+                </button>
+            </div>
+        `;
+    }
+
+    function refreshItemButtons() {
+        currentStock.forEach(item => {
+            const canAfford = canAffordItem(item.price);
+            const button = document.querySelector(`[onclick="buyItem(${item.id})"]`);
+            if (button) {
+                button.textContent = canAfford ? `Purchase (${item.stock} left)` : 'Need Exact Coins';
+                button.disabled = !canAfford;
+                button.className = `buy-button ${canAfford ? '' : 'insufficient-funds'}`;
+            }
+        });
+    }
+
+    function buyItem(itemId) {
+        const item = currentStock.find(i => i.id === itemId);
+        if (item && item.stock > 0 && canAffordItem(item.price)) {
+            if (!promptForPlayerName()) return;
+            deductCurrency(item.price);
+            document.getElementById('ppInput').value = playerWealth.pp;
+            document.getElementById('gpInput').value = playerWealth.gp;
+            document.getElementById('spInput').value = playerWealth.sp;
+            document.getElementById('cpInput').value = playerWealth.cp;
+            saveWealth();
+            updateTotalWealth();
+            item.stock--;
+            const card = document.querySelector(`[data-item-id="${itemId}"]`);
+            const button = card.querySelector('.buy-button');
+            const stockIndicator = card.querySelector('.stock-indicator');
+            stockIndicator.textContent = `${item.stock} in stock`;
+            button.textContent = item.stock === 0 ? 'SOLD OUT' : `Purchase (${item.stock} left)`;
+            if (item.stock === 0) button.disabled = true;
+            card.style.boxShadow = '0 0 30px #00ff00';
+            sendPurchaseToWebhook(item, 1);
+            setTimeout(() => {
+                card.style.boxShadow = '';
+                refreshItemButtons();
+            }, 500);
+        }
+    }
+
+    function startParticles() {
+        setInterval(() => {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (4 + Math.random() * 4) + 's';
+            particle.style.animationDelay = Math.random() * 2 + 's';
+            document.body.appendChild(particle);
+            setTimeout(() => particle.remove(), 8000);
+        }, 1000);
+    }
+
+    // EVENT LISTENERS
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+            e.preventDefault();
+            refreshStock(); // This NOW uses a refresh roll
+        }
+    });
+
+    // INITIALIZE
+    window.addEventListener('load', loadLootTable);
+
+    // Auto-refresh display every minute
+    setInterval(updateRefreshDisplay, 60000);
+</script>
 </body>
 </html>

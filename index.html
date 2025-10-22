@@ -634,8 +634,8 @@
 
 <script>
     // VERSION WATERMARK SYSTEM
-    const SHOP_VERSION = "v2.2.1";
-    const STORAGE_KEY = 'shopVersion1';
+    const SHOP_VERSION = "v2.2.2";
+    const STORAGE_KEY = 'shopVersion';
 
     // WEBHOOK CONFIG
     const WEBHOOK_URL = 'https://discord.com/api/webhooks/1429997152645415104/4dlKg8Gf1ca43BJ57SAYYfqjkslR_RtLjiasDRvrnAPXRi1kG4iG_8CkKw9QV3yhalPS';
@@ -650,35 +650,43 @@
     const MAX_FREE_REFRESHES = 2;
     const REFRESH_WINDOW = 60 * 60 * 1000; // 1 hour
 
-    // *** LOCKED ROLL SYSTEM ***
+    // *** PERFECTLY LOCKED ROLL SYSTEM ***
     function loadRollState() {
         const saved = localStorage.getItem('daShopRollState');
         if (saved) {
             const state = JSON.parse(saved);
             const now = Date.now();
             // Check if cooldown expired
-            if (now - state.lastRefreshTime >= REFRESH_WINDOW) {
+            if (now - state.lastRefreshTime >= REFRESH_WINDOW && state.rollsUsed === MAX_FREE_REFRESHES) {
                 console.log("⏰ COOLDOWN EXPIRED - Reset to LOCKED 0/2");
-                return { 
-                    rollsUsed: 0, 
-                    stock: generateRandomStock(), // Generate NEW initial stock
-                    lastRefreshTime: 0 
-                };
+                const newInitialStock = generateRandomStock();
+                saveRollState(0, newInitialStock);
+                return { rollsUsed: 0, stock: newInitialStock, lastRefreshTime: 0 };
             }
             return state;
         }
-        // FIRST TIME - Generate initial locked stock
+        // *** FIRST TIME - IMMEDIATELY LOCK INITIAL STOCK ***
         const initialStock = generateRandomStock();
-        console.log("🎲 FIRST TIME - LOCKED INITIAL STOCK GENERATED");
+        saveRollState(0, initialStock); // SAVE IT IMMEDIATELY!
+        console.log("🔒 FIRST TIME - INITIAL STOCK LOCKED & SAVED!");
         return { rollsUsed: 0, stock: initialStock, lastRefreshTime: 0 };
     }
 
     function saveRollState(rollsUsed, stock) {
         localStorage.setItem('daShopRollState', JSON.stringify({
             rollsUsed,
-            stock, // SAVE THE ACTUAL STOCK ARRAY
+            stock,
             lastRefreshTime: Date.now()
         }));
+    }
+
+    // *** TESTING FUNCTION - TRIPLE CLICK TITLE TO RESET ***
+    function resetShopForTesting() {
+        localStorage.removeItem('daShopRollState');
+        localStorage.removeItem('daShopWealth');
+        localStorage.removeItem('daShopPlayerName');
+        console.log("🧹 SHOP FULLY RESET FOR TESTING!");
+        location.reload();
     }
 
     // WEBHOOK PURCHASE NOTIFICATION (unchanged)
@@ -717,13 +725,13 @@
         const lastVersion = localStorage.getItem(STORAGE_KEY);
         const watermark = document.getElementById('versionWatermark');
         
-        watermark.innerHTML = `🛒 SHOP ${SHOP_VERSION} - LOCKED ${rollsUsed}/${MAX_FREE_REFRESHES}`;
+        watermark.innerHTML = `🛒 SHOP ${SHOP_VERSION} - 🔒 LOCKED ${rollsUsed}/${MAX_FREE_REFRESHES}`;
         watermark.style.display = 'inline-block';
         watermark.className = 'version-watermark';
         watermark.style.color = rollsUsed === 2 ? '#ff4757' : (rollsUsed === 0 ? '#ffd700' : '#00ff7f');
         
         if (lastVersion !== SHOP_VERSION) {
-            watermark.innerHTML += ` 🎉 FULLY LOCKED!`;
+            watermark.innerHTML += ` 🎉 FIRST ROLL LOCKED!`;
             watermark.classList.add('version-updated');
             localStorage.setItem(STORAGE_KEY, SHOP_VERSION);
             playVersionUpdateSound();
@@ -807,12 +815,13 @@
         loadWealth();
         loadPlayerName();
         
-        // *** LOAD LOCKED STATE + STOCK ***
+        // *** LOAD & LOCK STATE ***
         const rollState = loadRollState();
         const rollsUsed = rollState.rollsUsed;
         currentStock = rollState.stock;
         
-        console.log(`🔒 PAGE LOAD: LOCKED ${rollsUsed}/${MAX_FREE_REFRESHES} - Stock LOADED`);
+        console.log(`🔒 PAGE LOAD: FULLY LOCKED ${rollsUsed}/${MAX_FREE_REFRESHES}`);
+        console.log(`🔒 STOCK: ${currentStock.length} items - CTRL+R will NOT change!`);
         
         document.getElementById('itemsGrid').innerHTML = currentStock.map(createItemCard).join('');
         updateRefreshDisplay(rollsUsed);
@@ -844,7 +853,7 @@
                 💰 Press <strong>SPACEBAR</strong> to <strong>UNLOCK</strong> next roll 💰
                 <div class="refresh-limit locked-stage">
                     <span id="refreshCount">🔒 LOCKED ${rollsUsed}/${MAX_FREE_REFRESHES}</span>
-                    <br><small>CTRL+R will NOT change stock!</small>
+                    <br><small><strong>CTRL+R = SAME STOCK!</strong></small>
                 </div>
             `;
         } else {
@@ -853,7 +862,7 @@
                 ⏳ <strong>MAX ROLLS REACHED</strong> ⏳
                 <div class="refresh-limit warning">
                     <span class="cooldown-timer">🔒 LOCKED 2/2 - ${formatTimeLeft(timeLeft)} until reset</span>
-                    <br><small>Stock is PERMANENT until cooldown ends</small>
+                    <br><small><strong>Stock is PERMANENT!</strong></small>
                 </div>
             `;
             startCountdown();
@@ -873,17 +882,17 @@
             const rollState = loadRollState();
             if (Date.now() - rollState.lastRefreshTime >= REFRESH_WINDOW) {
                 clearInterval(countdownInterval);
-                // RESET TO NEW LOCKED 0/2
-                saveRollState(0, generateRandomStock());
+                const newInitialStock = generateRandomStock();
+                saveRollState(0, newInitialStock);
                 location.reload();
                 return;
             }
             const timeLeft = Math.ceil((REFRESH_WINDOW - (Date.now() - rollState.lastRefreshTime)) / 1000);
-            document.querySelector('.cooldown-timer').innerHTML = `🔒 LOCKED 2/2 - ${formatTimeLeft(timeLeft)} until reset<br><small>Stock is PERMANENT until cooldown ends</small>`;
+            document.querySelector('.cooldown-timer').innerHTML = `🔒 LOCKED 2/2 - ${formatTimeLeft(timeLeft)} until reset<br><small><strong>Stock is PERMANENT!</strong></small>`;
         }, 1000);
     }
 
-    // *** LOCKED REROLL - Only unlocks next stage ***
+    // *** LOCKED REROLL ***
     function refreshStock() {
         const rollState = loadRollState();
         const rollsUsed = rollState.rollsUsed;
@@ -893,11 +902,8 @@
             return;
         }
 
-        // Generate NEW stock for NEXT STAGE
         const newStock = generateRandomStock();
         document.getElementById('itemsGrid').innerHTML = newStock.map(createItemCard).join('');
-        
-        // LOCK NEW STATE
         saveRollState(rollsUsed + 1, newStock);
         
         const overlay = document.getElementById('refreshOverlay');
@@ -908,10 +914,10 @@
             updateRefreshDisplay(rollsUsed + 1);
         }, 1500);
         
-        console.log(`🔓 STAGE ${rollsUsed + 1}/${MAX_FREE_REFRESHES} UNLOCKED - Stock LOCKED!`);
+        console.log(`🔓 STAGE ${rollsUsed + 1}/${MAX_FREE_REFRESHES} LOCKED!`);
     }
 
-    // [ALL OTHER FUNCTIONS UNCHANGED - generateRandomStock, createItemCard, currency, buyItem, dev mode, etc.]
+    // [ALL OTHER FUNCTIONS - generateRandomStock, createItemCard, currency, buyItem - UNCHANGED]
     function generateRandomStock() {
         const stock = [];
         const stockSize = 8 + Math.floor(Math.random() * 4);
@@ -974,11 +980,10 @@
                 }
             }
         }
-
         return stock;
     }
 
-    // [REMAINING FUNCTIONS - createItemCard, currency, buyItem, dev mode - SAME AS BEFORE]
+    // [REMAINING FUNCTIONS - SAME AS BEFORE]
     const rarityColors = { common: '#c0c0c0', uncommon: '#00ff7f', rare: '#4169e1', epic: '#9932cc', legendary: '#ffd700' };
 
     function getItemImageStyle(rarity) {
@@ -1149,15 +1154,22 @@
 
     function setupDevAccess() {
         document.getElementById('devToggleBtn').addEventListener('click', toggleDevPanel);
+        
+        // *** TRIPLE CLICK TITLE = RESET SHOP FOR TESTING ***
         let titleClickCount = 0;
         document.getElementById('shopTitle').addEventListener('click', function() {
             titleClickCount++;
+            this.style.color = '#ff0000';
+            
             if (titleClickCount === 3) {
-                toggleDevPanel();
-                titleClickCount = 0;
-                this.style.color = '#00ff7f';
-                setTimeout(() => this.style.color = '#ffd700', 1000);
+                console.log("🧹 TRIPLE CLICK DETECTED - RESETTING SHOP!");
+                resetShopForTesting();
             }
+            
+            setTimeout(() => {
+                if (titleClickCount !== 3) this.style.color = '#ffd700';
+            }, 200);
+            
             setTimeout(() => titleClickCount = 0, 2000);
         });
     }

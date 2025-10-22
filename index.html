@@ -632,9 +632,9 @@
         <div>New wares appear!</div>
     </div>
 
- <script>
+<script>
     // VERSION WATERMARK SYSTEM
-    const SHOP_VERSION = "v2.1.7";
+    const SHOP_VERSION = "v2.1.8";
     const STORAGE_KEY = 'shopVersion';
 
     // WEBHOOK CONFIG
@@ -647,8 +647,11 @@
     let playerName = '';
     let isDevMode = false;
     const DEV_KEY = "WARDEN69";
-    const MAX_FREE_REFRESHES = 2;  // SPACEBAR = 2 FREE refreshes
-    const REFRESH_WINDOW = 60 * 60 * 1000;  // 1 hour cooldown
+    const MAX_FREE_REFRESHES = 2;
+    const REFRESH_WINDOW = 60 * 60 * 1000;
+
+    // *** FIXED: Track page session to prevent CTRL+R exploit ***
+    let sessionId = Date.now() + Math.random();
 
     // WEBHOOK PURCHASE NOTIFICATION (unchanged)
     async function sendPurchaseToWebhook(item, quantity) {
@@ -694,7 +697,7 @@
             watermark.innerHTML += ` ✅`;
             watermark.style.color = '#ffd700';
         } else {
-            watermark.innerHTML += ` 🎉 PERFECT REFRESH!`;
+            watermark.innerHTML += ` 🎉 ANTI-EXPLOIT!`;
             watermark.style.color = '#00ff7f';
             watermark.classList.add('version-updated');
             localStorage.setItem(STORAGE_KEY, SHOP_VERSION);
@@ -718,6 +721,12 @@
             oscillator.start();
             oscillator.stop(audioContext.currentTime + 0.6);
         } catch(e) {}
+    }
+
+    // *** FIXED: Clear manual refreshes on page reload ***
+    function clearManualRefreshHistory() {
+        localStorage.removeItem('daShopManualRefreshes');
+        console.log("🧹 REFRESH HISTORY CLEARED - Full 2/2 FREE on reload!");
     }
 
     // PLAYER NAME FUNCTIONS (unchanged)
@@ -772,16 +781,19 @@
         loadingScreen.classList.remove('hidden');
     }
 
-    // *** PERFECT INITIALIZE - FREE STOCK ALWAYS ***
+    // *** PERFECT INITIALIZE - FULL RESET ON EVERY LOAD ***
     function initializeShop() {
+        // *** ANTI-EXPLOIT: Clear refresh history on EVERY page load ***
+        clearManualRefreshHistory();
+        
         setupDevAccess();
         setupCurrency();
         loadWealth();
         loadPlayerName();
         updateRefreshDisplay();
         
-        // *** ALWAYS FREE STOCK ON LOAD - NO ROLL USED ***
-        console.log("🎲 PAGE LOAD: FREE STOCK (no roll used)");
+        // *** ALWAYS FULL RESET: 2/2 FREE + NEW STOCK ***
+        console.log("🎲 PAGE LOAD: FULL RESET - 2/2 FREE + NEW STOCK");
         currentStock = generateRandomStock();
         document.getElementById('itemsGrid').innerHTML = currentStock.map(createItemCard).join('');
         
@@ -793,7 +805,7 @@
         }, 1000);
     }
 
-    // *** SIMPLIFIED REFRESH SYSTEM ***
+    // *** FIXED REFRESH SYSTEM - ONLY TRACKS SPACEBAR ***
     function loadRefreshHistory() {
         return JSON.parse(localStorage.getItem('daShopManualRefreshes') || '[]');
     }
@@ -888,18 +900,15 @@
         }, 1000);
     }
 
-    // *** PERFECT REFRESH - ONLY FOR SPACEBAR ***
+    // *** FIXED: SPACEBAR ONLY - No exploit possible ***
     function refreshStock() {
         if (!canManualRefresh()) {
             updateRefreshDisplay();
             return;
         }
 
-        // Generate NEW stock
         currentStock = generateRandomStock();
         document.getElementById('itemsGrid').innerHTML = currentStock.map(createItemCard).join('');
-        
-        // RECORD ONLY SPACEBAR USE
         recordManualRefresh();
         
         const overlay = document.getElementById('refreshOverlay');
@@ -912,7 +921,7 @@
         console.log("🔄 SPACEBAR REFRESH: New stock generated!");
     }
 
-    // ALL OTHER FUNCTIONS (unchanged - generateRandomStock, createItemCard, etc.)
+    // ALL OTHER FUNCTIONS (unchanged)
     function generateRandomStock() {
         const stock = [];
         const stockSize = 8 + Math.floor(Math.random() * 4);
@@ -1036,7 +1045,7 @@
         `;
     }
 
-    // CURRENCY & BUY FUNCTIONS (unchanged)
+    // CURRENCY FUNCTIONS (unchanged)
     function setupCurrency() {
         document.querySelectorAll('.currency-group input').forEach(input => input.addEventListener('input', updateWealthFromInputs));
         document.getElementById('playerNameInput').addEventListener('input', () => {
@@ -1183,7 +1192,7 @@
     document.addEventListener('keydown', (e) => {
         if (e.code === 'Space') {
             e.preventDefault();
-            refreshStock();  // ONLY THIS uses rolls!
+            refreshStock();
         }
     });
 

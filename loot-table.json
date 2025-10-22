@@ -2,22 +2,32 @@
   "itemTemplates": [
     {
       "name": "Traveler's Rations",
-      "description": "Hard bread, dried meat, and cheese. Enough for a day's journey.",
-      "price": { "cp": 2 },
+      "description": "Hard bread, dried meat and cheese. Enough for a day's journey.",
+      "price": { "gp": 2 },
       "stats": ["1 Day Food", "No Exhaustion"],
       "rarity": "common",
       "tier": "basic",
-      "stockRange": [20, 50],
+      "stockRange": [1, 2],
       "spawnChance": 0.15
+    },
+    {
+      "name": "Farmers Rations",
+      "description": "Hard bread, dried mystery meat. Enough for a small journey.",
+      "price": { "sp": 4 },
+      "stats": ["0.25 Day Food"],
+      "rarity": "common",
+      "tier": "basic",
+      "stockRange": [1, 12],
+      "spawnChance": 0.2
     },
     {
       "name": "Bobs Left Toe",
       "description": "Preserved food for harsh conditions. Tastes like boot leather.",
-      "price": { "cp": 5 },
+      "price": { "gp": 1 },
       "stats": ["1 Day Food", "Heals 1HP if eaten outside camp"],
       "rarity": "common",
       "tier": "basic",
-      "stockRange": [15, 40],
+      "stockRange": [1, 2],
       "spawnChance": 0.15
     },
     {
@@ -26,19 +36,19 @@
       "price": { "cp": 8 },
       "stats": ["Heal 1d4+2", "Stop Bleeding"],
       "rarity": "uncommon",
-      "tier": "basic",
-      "stockRange": [25, 60],
-      "spawnChance": 0.15
+      "tier": "uncommon",
+      "stockRange": [1, 2],
+      "spawnChance": 0.13
     },
     {
       "name": "Holy Water Vial",
       "description": "Blessed water from the nearest chantry.",
       "price": { "sp": 2 },
-      "stats": ["+1d4 vs Demons", "Purify Water"],
+      "stats": ["+1d4 vs Demons"],
       "rarity": "uncommon",
-      "tier": "basic",
-      "stockRange": [12, 30],
-      "spawnChance": 0.15
+      "tier": "uncommon",
+      "stockRange": [1, 7],
+      "spawnChance": 0.13
     },
     {
       "name": "Dwarven Spear",
@@ -47,28 +57,28 @@
       "stats": ["1d6 Piercing"],
       "rarity": "common",
       "tier": "common",
-      "stockRange": [8, 15],
+      "stockRange": [1, 1],
       "spawnChance": 0.15
     },
     {
       "name": "Antivan Poison Vial",
       "description": "A deadly concoction from the Crows of Antiva.",
-      "price": { "sp": 8, "cp": 5 },
+      "price": { "sp": 8 },
       "stats": ["+1d6 Poison damage for 2 turns"],
       "rarity": "uncommon",
-      "tier": "common",
+      "tier": "uncommon",
       "stockRange": [10, 25],
-      "spawnChance": 0.15
+      "spawnChance": 0.13
     },
     {
       "name": "Qunari War Paint",
       "description": "Grants the ferocity of the Arishok himself.",
-      "price": { "sp": 15 },
-      "stats": ["+1 AC while wearing"],
+      "price": { "sp": 10 },
+      "stats": ["+1 AC while wearing - Until Long Rest"],
       "rarity": "uncommon",
-      "tier": "common",
-      "stockRange": [6, 12],
-      "spawnChance": 0.15
+      "tier": "uncommon",
+      "stockRange": [3, 8],
+      "spawnChance": 0.13
     },
     {
       "name": "Masterwork Longsword",
@@ -83,7 +93,7 @@
     {
       "name": "Fade-Touched Leather Armour",
       "description": "Supple armor infused with the essence of the Fade itself.",
-      "price": { "gp": 2, "sp": 15 },
+      "price": { "gp": 3 },
       "stats": ["AC 13 +1d6 reduction to demon attacks"],
       "rarity": "rare",
       "tier": "quality",
@@ -93,7 +103,7 @@
     {
       "name": "Chantry Blessed Amulet",
       "description": "Protected by the Maker's light.",
-      "price": { "gp": 2, "sp": 10 },
+      "price": { "gp": 15 },
       "stats": ["+2 AC while wearing"],
       "rarity": "epic",
       "tier": "quality",
@@ -103,8 +113,8 @@
     {
       "name": "Blade of the Warden",
       "description": "A longsword forged in the fires of Orzammar, tempered with lyrium.",
-      "price": { "gp": 85 },
-      "stats": ["2d6 Slashing +1d8 Slashing against Darkspawn. One Handed"],
+      "price": { "gp": 55 },
+      "stats": ["2d8 Slashing +1d8 Slashing against Darkspawn. One Handed"],
       "rarity": "legendary",
       "tier": "legendary",
       "stockRange": [1, 1],
@@ -113,22 +123,183 @@
     {
       "name": "Lyrium-Laced Ring",
       "description": "A silver band pulsing with raw magical energy.",
-      "price": { "gp": 27, "sp": 5 },
+      "price": { "gp": 27 },
       "stats": ["1d6 Resistance to magic"],
       "rarity": "epic",
-      "tier": "legendary",
+      "tier": "quality",
       "stockRange": [1, 2],
       "spawnChance": 0.05
     },
     {
-      "name": "Elven Spirit Essence",
+      "name": "Bundle of Wax Coated String",
+      "description": "A bundle of weaved string, seemingly coated in wax. 50ft.",
+      "price": { "sp": 3 },
+      "stats": ["Plain old string"],
+      "rarity": "common",
+      "tier": "common",
+      "stockRange": [1, 2],
+      "spawnChance": 0.15
+    },
+    {
+      "name": "Childrens doll",
+      "description": "A simple home-made childrens doll. I daren't ask where it came from.",
+      "price": { "sp": 1 },
+      "stats": ["Just a doll"],
+      "rarity": "common",
+      "tier": "common",
+      "stockRange": [1, 1],
+      "spawnChance": 0.15
+     },
+    {
+      "name": "Vial of the Artisans memory",
+      "description": "Legends say, if you listen close, you can hear the Artisans child laughing. Lasts 1 combat or 1 minute",
+      "price": { "gp": 2 },
+      "stats": ["Roll advantage on first attack roll each turn. Roll advantage on lockpicking and dex checks"],
+      "rarity": "rare",
+      "tier": "quality",
+      "stockRange": [1, 3],
+      "spawnChance": 0.10
+    },
+    {
+      "name": "Kogane's Arrow",
+      "description": "Wielded by the Legendary Kogane, jack of all trades but master of none.",
+      "price": { "gp": 2 },
+      "stats": ["50% Chance. Crtit Hit or Crit Miss. 1d10+2 per arrow"],
+      "rarity": "epic",
+      "tier": "quality",
+      "stockRange": [1, 5],
+      "spawnChance": 0.05
+    },
+    {
+      "name": "Storm Ruler",
+      "description": "Once wielded by Fen'harel's right hand man. Now just a shadow of it's former glory. 2 handed Katana",
+      "price": { "gp": 27 },
+      "stats": ["+2 Hit DC. 2d4, 40Ft Ranged attack. 1d10+2 slashing"],
+      "rarity": "epic",
+      "tier": "quality",
+      "stockRange": [1, 1],
+      "spawnChance": 0.05
+    },
+    {
+      "name": "Longbow",
+      "description": "Discarded hunters longbow, definitely seen better days.",
+      "price": { "sp": 5 },
+      "stats": ["+2 Hit DC. 1d8+2"],
+      "rarity": "common",
+      "tier": "common",
+      "stockRange": [1, 2],
+      "spawnChance": 0.15
+    },
+    {
+      "name": "Longsword",
+      "description": "Discarded Soldier's Blade, straight from Ostagar... with a crack down the middle -The Merchant",
+      "price": { "sp": 5 },
+      "stats": ["+4 Hit DC. 1d6+3"],
+      "rarity": "common",
+      "tier": "common",
+      "stockRange": [1, 2],
+      "spawnChance": 0.15
+    },
+    {
+      "name": "Silverene Dagger",
+      "description": "Lose lose win lose win lose win win win...",
+      "price": { "sp": 5 },
+      "stats": ["+5 Hit DC. 1d6+2. Chance to extend range by 5 feet"],
+      "rarity": "rare",
+      "tier": "quality",
+      "stockRange": [1, 1],
+      "spawnChance": 0.10
+    },
+    {
+      "name": "Fishing Rod",
+      "description": "What happened to the fisherman who owned it? Noone knows...",
+      "price": { "sp": 2 },
+      "stats": ["Fish. 1d2 Bludgeoning Damage"],
+      "rarity": "common",
+      "tier": "common",
+      "stockRange": [1, 3],
+      "spawnChance": 0.15
+    },
+    {
+      "name": "Grey Grimoire",
+      "description": "Legend has it, the garden witch who used this grimoire, sold it.",
+      "price": { "sp": 4 },
+      "stats": ["+1 Hit DC to magic of your choosing"],
+      "rarity": "common",
+      "tier": "common",
+      "stockRange": [1, 3],
+      "spawnChance": 0.15
+    },
+    {
+      "name": "Monacle of seeing",
+      "description": "She knows...",
+      "price": { "gp": 25 },
+      "stats": ["Adv on Perception based rolls. True sight"],
+      "rarity": "legendary",
+      "tier": "legendary",
+      "stockRange": [1, 1],
+      "spawnChance": 0.005
+    },
+    {
+      "name": "Powder of smallening",
+      "description": "Yum tum yummy tum tee",
+      "price": { "sp": 8 },
+      "stats": ["5 Uses. Allows you to go small, disengaging a fight with 10ft movement. No opportunity attack while small"],
+      "rarity": "uncommon",
+      "tier": "uncommon",
+      "stockRange": [1, 2],
+      "spawnChance": 0.13
+    },
+    {
+      "name": "Unidentified Ore",
+      "description": "An ore of unknown origin. Has a strange glow to it",
+      "price": { "sp": 7 },
+      "stats": ["???"],
+      "rarity": "rare",
+      "tier": "quality",
+      "stockRange": [1, 7],
+      "spawnChance": 0.10
+    },
+    {
+      "name": "Rose of true confession",
+      "description": "This rose has undocumented beauty",
+      "price": { "sp": 5 },
+      "stats": ["Charm Person. Adv on persuasion"],
+      "rarity": "epic",
+      "tier": "quality",
+      "stockRange": [1, 10],
+      "spawnChance": 0.05
+    },
+    {
+      "name": "Backpack of the visionary",
+      "description": "This backpack allows the user to reach to the gods, asking for any material item.",
+      "price": { "gp": 100 },
+      "stats": ["Any Item at your fingertips"],
+      "rarity": "legendary",
+      "tier": "legendary",
+      "stockRange": [1, 1],
+      "spawnChance": 0.003
+    },
+    {
+      "name": "Strange Glowing Orb",
+      "description": "This orb is stated to be linked to some of the most powerful demons in the fade. Maybe ready to make a contract with any such adventurer that dare?",
+      "price": { "gp": 75 },
+      "stats": ["Make a contract with any type of demon. One time use"],
+      "rarity": "legendary",
+      "tier": "legendary",
+      "stockRange": [1, 1],
+      "spawnChance": 0.005
+    },
+    {
+      "name": "Dalish Spirit Essence",
       "description": "Distilled from ancient Dalish rituals. Exceedingly rare.",
-      "price": { "pp": 1, "gp": 7 },
+      "price": { "gp": 20 },
       "stats": ["Full Heal"],
       "rarity": "legendary",
       "tier": "legendary",
-      "stockRange": [1, 3],
-      "spawnChance": 0.10
+      "stockRange": [1, 2],
+      "spawnChance": 0.005
     }
   ]
 }
+

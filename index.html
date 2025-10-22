@@ -634,7 +634,7 @@
 
  <script>
     // VERSION WATERMARK SYSTEM
-    const SHOP_VERSION = "v2.1.6"; // Updated version
+    const SHOP_VERSION = "v2.1.7";
     const STORAGE_KEY = 'shopVersion';
 
     // WEBHOOK CONFIG
@@ -647,11 +647,8 @@
     let playerName = '';
     let isDevMode = false;
     const DEV_KEY = "WARDEN69";
-    const MAX_REFRESHES = 2;
-    const REFRESH_WINDOW = 60 * 60 * 1000;
-
-    // *** NEW: Track if this is INITIAL LOAD vs MANUAL REFRESH ***
-    let isInitialLoad = true;
+    const MAX_FREE_REFRESHES = 2;  // SPACEBAR = 2 FREE refreshes
+    const REFRESH_WINDOW = 60 * 60 * 1000;  // 1 hour cooldown
 
     // WEBHOOK PURCHASE NOTIFICATION (unchanged)
     async function sendPurchaseToWebhook(item, quantity) {
@@ -684,7 +681,7 @@
         }
     }
 
-    // VERSION WATERMARK FUNCTIONS (unchanged)
+    // VERSION WATERMARK FUNCTIONS
     function checkVersionAndShowWatermark() {
         const lastVersion = localStorage.getItem(STORAGE_KEY);
         const watermark = document.getElementById('versionWatermark');
@@ -697,7 +694,7 @@
             watermark.innerHTML += ` ✅`;
             watermark.style.color = '#ffd700';
         } else {
-            watermark.innerHTML += ` 🎉 FIXED REFRESH!`;
+            watermark.innerHTML += ` 🎉 PERFECT REFRESH!`;
             watermark.style.color = '#00ff7f';
             watermark.classList.add('version-updated');
             localStorage.setItem(STORAGE_KEY, SHOP_VERSION);
@@ -775,7 +772,7 @@
         loadingScreen.classList.remove('hidden');
     }
 
-    // *** FIXED INITIALIZE SHOP ***
+    // *** PERFECT INITIALIZE - FREE STOCK ALWAYS ***
     function initializeShop() {
         setupDevAccess();
         setupCurrency();
@@ -783,13 +780,10 @@
         loadPlayerName();
         updateRefreshDisplay();
         
-        // *** FIXED: Only generate stock on INITIAL LOAD, NO REFRESH COUNT USED ***
-        if (isInitialLoad) {
-            console.log("🎲 INITIAL LOAD: Generating stock (FREE - no refresh used)");
-            currentStock = generateRandomStock();
-            document.getElementById('itemsGrid').innerHTML = currentStock.map(createItemCard).join('');
-            isInitialLoad = false; // Only once!
-        }
+        // *** ALWAYS FREE STOCK ON LOAD - NO ROLL USED ***
+        console.log("🎲 PAGE LOAD: FREE STOCK (no roll used)");
+        currentStock = generateRandomStock();
+        document.getElementById('itemsGrid').innerHTML = currentStock.map(createItemCard).join('');
         
         startParticles();
         checkVersionAndShowWatermark();
@@ -799,156 +793,37 @@
         }, 1000);
     }
 
-    // DEV MODE FUNCTIONS (unchanged)
-    function toggleDevPanel() {
-        document.getElementById('devOverride').classList.toggle('show');
-    }
-
-    function activateDevMode() {
-        const keyInput = document.getElementById('devKeyInput');
-        const status = document.getElementById('devStatus');
-        const enteredKey = keyInput.value.trim();
-
-        if (enteredKey === DEV_KEY) {
-            isDevMode = true;
-            status.innerHTML = '<span class="dev-active">ONLINE ⚡ Unlimited!</span>';
-            keyInput.value = '';
-            keyInput.placeholder = 'Dev Mode Active!';
-            document.getElementById('devOverride').style.boxShadow = '0 0 40px #00ff7f';
-            updateRefreshDisplay();
-            playSuccessSound();
-            setTimeout(toggleDevPanel, 1500);
-        } else {
-            status.innerHTML = '<span class="dev-inactive">WRONG KEY ❌</span>';
-            keyInput.value = '';
-            setTimeout(() => {
-                status.innerHTML = 'Dev Mode: <span class="dev-inactive">OFF</span>';
-            }, 2000);
-        }
-    }
-
-    function playSuccessSound() {
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            oscillator.frequency.value = 800;
-            oscillator.type = 'sine';
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.5);
-        } catch(e) {}
-    }
-
-    function setupDevAccess() {
-        document.getElementById('devToggleBtn').addEventListener('click', toggleDevPanel);
-        let titleClickCount = 0;
-        document.getElementById('shopTitle').addEventListener('click', function() {
-            titleClickCount++;
-            if (titleClickCount === 3) {
-                toggleDevPanel();
-                titleClickCount = 0;
-                this.style.color = '#00ff7f';
-                setTimeout(() => this.style.color = '#ffd700', 1000);
-            }
-            setTimeout(() => titleClickCount = 0, 2000);
-        });
-    }
-
-    // CURRENCY FUNCTIONS (unchanged)
-    function setupCurrency() {
-        document.querySelectorAll('.currency-group input').forEach(input => {
-            input.addEventListener('input', updateWealthFromInputs);
-        });
-        document.getElementById('playerNameInput').addEventListener('input', () => {
-            playerName = document.getElementById('playerNameInput').value.trim();
-            savePlayerName();
-        });
-    }
-
-    function getTotalWealth() {
-        return playerWealth.pp * 10 + playerWealth.gp + playerWealth.sp * 0.1 + playerWealth.cp * 0.01;
-    }
-
-    function canAffordItem(price) {
-        for (let [currency, amount] of Object.entries(price)) {
-            if (playerWealth[currency] < amount) return false;
-        }
-        return true;
-    }
-
-    function deductCurrency(price) {
-        for (let [currency, amount] of Object.entries(price)) {
-            playerWealth[currency] -= amount;
-        }
-    }
-
-    function loadWealth() {
-        const saved = localStorage.getItem('daShopWealth');
-        if (saved) {
-            playerWealth = JSON.parse(saved);
-            document.getElementById('ppInput').value = playerWealth.pp;
-            document.getElementById('gpInput').value = playerWealth.gp;
-            document.getElementById('spInput').value = playerWealth.sp;
-            document.getElementById('cpInput').value = playerWealth.cp;
-        }
-        updateTotalWealth();
-    }
-
-    function saveWealth() {
-        localStorage.setItem('daShopWealth', JSON.stringify(playerWealth));
-    }
-
-    function updateTotalWealth() {
-        const total = getTotalWealth();
-        document.getElementById('totalWealth').textContent = `Total: ${total.toFixed(2)} gp`;
-    }
-
-    function updateWealthFromInputs() {
-        playerWealth.pp = parseInt(document.getElementById('ppInput').value) || 0;
-        playerWealth.gp = parseInt(document.getElementById('gpInput').value) || 0;
-        playerWealth.sp = parseInt(document.getElementById('spInput').value) || 0;
-        playerWealth.cp = parseInt(document.getElementById('cpInput').value) || 0;
-        saveWealth();
-        updateTotalWealth();
-        refreshItemButtons();
-    }
-
-    // *** FIXED REFRESH SYSTEM ***
+    // *** SIMPLIFIED REFRESH SYSTEM ***
     function loadRefreshHistory() {
-        return JSON.parse(localStorage.getItem('daShopRefreshes') || '[]');
+        return JSON.parse(localStorage.getItem('daShopManualRefreshes') || '[]');
     }
 
     function saveRefreshHistory(history) {
-        localStorage.setItem('daShopRefreshes', JSON.stringify(history));
+        localStorage.setItem('daShopManualRefreshes', JSON.stringify(history));
     }
 
-    function getAvailableRefreshes() {
+    function getAvailableFreeRefreshes() {
         if (isDevMode) return Infinity;
         const history = loadRefreshHistory();
         const now = Date.now();
         const validRefreshes = history.filter(ts => now - ts < REFRESH_WINDOW);
-        return MAX_REFRESHES - validRefreshes.length;
+        return MAX_FREE_REFRESHES - validRefreshes.length;
     }
 
-    function canRefresh() {
-        return isDevMode || getAvailableRefreshes() > 0;
+    function canManualRefresh() {
+        return isDevMode || getAvailableFreeRefreshes() > 0;
     }
 
-    // *** FIXED: Only record MANUAL refreshes, not initial load ***
-    function recordRefresh() {
+    function recordManualRefresh() {
         if (isDevMode) return;
         const history = loadRefreshHistory();
         history.push(Date.now());
         saveRefreshHistory(history);
-        console.log("🔄 MANUAL REFRESH RECORDED - rolls used:", MAX_REFRESHES - getAvailableRefreshes() + 1);
+        console.log("🔄 SPACEBAR REFRESH RECORDED - free rolls used:", MAX_FREE_REFRESHES - getAvailableFreeRefreshes() + 1);
     }
 
     function updateRefreshDisplay() {
-        const available = getAvailableRefreshes();
+        const available = getAvailableFreeRefreshes();
         const refreshInfo = document.getElementById('refreshInfo');
 
         if (isDevMode) {
@@ -966,7 +841,7 @@
             refreshInfo.innerHTML = `
                 💰 Press <strong>SPACEBAR</strong> to refresh stock 💰
                 <div class="refresh-limit">
-                    <span id="refreshCount">${available}/${MAX_REFRESHES}</span> refreshes remaining this hour
+                    <span id="refreshCount">${available}/${MAX_FREE_REFRESHES}</span> FREE refreshes remaining this hour
                 </div>
             `;
         } else {
@@ -974,9 +849,9 @@
             if (nextRefresh) {
                 const timeLeft = Math.ceil((nextRefresh - Date.now()) / 1000);
                 refreshInfo.innerHTML = `
-                    ⏳ <strong>Refresh Limit Reached</strong> ⏳
+                    ⏳ <strong>All Free Refreshes Used</strong> ⏳
                     <div class="refresh-limit warning">
-                        <span class="cooldown-timer">${formatTimeLeft(timeLeft)} until next refresh</span>
+                        <span class="cooldown-timer">${formatTimeLeft(timeLeft)} until 2 new FREE refreshes</span>
                     </div>
                 `;
                 startCountdown(nextRefresh);
@@ -989,7 +864,7 @@
         const history = loadRefreshHistory();
         const now = Date.now();
         const validRefreshes = history.filter(ts => now - ts < REFRESH_WINDOW);
-        if (validRefreshes.length < MAX_REFRESHES) return null;
+        if (validRefreshes.length < MAX_FREE_REFRESHES) return null;
         return validRefreshes[0] + REFRESH_WINDOW;
     }
 
@@ -1013,19 +888,19 @@
         }, 1000);
     }
 
-    // *** FIXED REFRESH STOCK - Only charges for MANUAL refresh ***
+    // *** PERFECT REFRESH - ONLY FOR SPACEBAR ***
     function refreshStock() {
-        if (!canRefresh()) {
+        if (!canManualRefresh()) {
             updateRefreshDisplay();
             return;
         }
 
-        // *** Generate new stock ONLY for MANUAL refresh ***
+        // Generate NEW stock
         currentStock = generateRandomStock();
         document.getElementById('itemsGrid').innerHTML = currentStock.map(createItemCard).join('');
         
-        // *** Record ONLY MANUAL refreshes ***
-        recordRefresh();
+        // RECORD ONLY SPACEBAR USE
+        recordManualRefresh();
         
         const overlay = document.getElementById('refreshOverlay');
         overlay.classList.add('show');
@@ -1034,15 +909,14 @@
             updateRefreshDisplay();
         }, 1500);
         
-        console.log("🔄 MANUAL REFRESH: New stock generated!");
+        console.log("🔄 SPACEBAR REFRESH: New stock generated!");
     }
 
-    // SHOP FUNCTIONS (rest unchanged)
+    // ALL OTHER FUNCTIONS (unchanged - generateRandomStock, createItemCard, etc.)
     function generateRandomStock() {
         const stock = [];
         const stockSize = 8 + Math.floor(Math.random() * 4);
         const commons = itemTemplates.filter(item => item.rarity === 'common');
-        const nonCommons = itemTemplates.filter(item => item.rarity !== 'common');
         let legendaryCount = 0;
 
         const shuffledCommons = commons.sort(() => Math.random() - 0.5);
@@ -1058,18 +932,8 @@
 
         const remainingSlots = stockSize - stock.length;
         if (remainingSlots > 0) {
-            const rarityWeights = {
-                legendary: 1,
-                epic: 5,
-                rare: 10,
-                uncommon: 15,
-                common: 20
-            };
-
-            const weightedItems = itemTemplates.map(item => ({
-                item,
-                weight: rarityWeights[item.rarity] || 10
-            }));
+            const rarityWeights = { legendary: 1, epic: 5, rare: 10, uncommon: 15, common: 20 };
+            const weightedItems = itemTemplates.map(item => ({ item, weight: rarityWeights[item.rarity] || 10 }));
             const totalWeight = weightedItems.reduce((sum, { weight }) => sum + weight, 0);
 
             for (let i = 0; i < remainingSlots; i++) {
@@ -1113,21 +977,12 @@
         }
 
         const rarityCount = {};
-        stock.forEach(item => {
-            rarityCount[item.rarity] = (rarityCount[item.rarity] || 0) + 1;
-        });
-        console.log(`🎲 Stock Generated: ${stock.length} items`);
-        console.log(`📊 Breakdown:`, rarityCount);
+        stock.forEach(item => rarityCount[item.rarity] = (rarityCount[item.rarity] || 0) + 1);
+        console.log(`🎲 Stock Generated: ${stock.length} items`, rarityCount);
         return stock;
     }
 
-    const rarityColors = {
-        common: '#c0c0c0',
-        uncommon: '#00ff7f',
-        rare: '#4169e1',
-        epic: '#9932cc',
-        legendary: '#ffd700'
-    };
+    const rarityColors = { common: '#c0c0c0', uncommon: '#00ff7f', rare: '#4169e1', epic: '#9932cc', legendary: '#ffd700' };
 
     function getItemImageStyle(rarity) {
         const styles = {
@@ -1163,10 +1018,7 @@
         return `
             <div class="item-card" style="--rarity-color: ${rarityColor}" data-item-id="${item.id}">
                 <div class="item-image" style="background: ${imageStyle}">
-                    <div style="position: absolute; top: 10px; right: 10px; 
-                               background: ${rarityColor}; color: #000; 
-                               padding: 4px 8px; border-radius: 12px; 
-                               font-size: 0.8rem; font-weight: bold;">
+                    <div style="position: absolute; top: 10px; right: 10px; background: ${rarityColor}; color: #000; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;">
                         ${item.rarity.toUpperCase()}
                     </div>
                 </div>
@@ -1176,15 +1028,49 @@
                     ${item.stats.map(stat => `<span class="stat-tag">${stat}</span>`).join('')}
                 </div>
                 <div class="stock-indicator">${item.stock} in stock</div>
-                <div class="item-price" id="price-${item.id}">
-                    ${formatPrice(item.price)}
-                </div>
-                <button class="buy-button ${canAfford ? '' : 'insufficient-funds'}" 
-                        onclick="buyItem(${item.id})" ${!canAfford ? 'disabled' : ''}>
+                <div class="item-price" id="price-${item.id}">${formatPrice(item.price)}</div>
+                <button class="buy-button ${canAfford ? '' : 'insufficient-funds'}" onclick="buyItem(${item.id})" ${!canAfford ? 'disabled' : ''}>
                     ${canAfford ? `Purchase (${item.stock} left)` : 'Need Exact Coins'}
                 </button>
             </div>
         `;
+    }
+
+    // CURRENCY & BUY FUNCTIONS (unchanged)
+    function setupCurrency() {
+        document.querySelectorAll('.currency-group input').forEach(input => input.addEventListener('input', updateWealthFromInputs));
+        document.getElementById('playerNameInput').addEventListener('input', () => {
+            playerName = document.getElementById('playerNameInput').value.trim();
+            savePlayerName();
+        });
+    }
+
+    function getTotalWealth() { return playerWealth.pp * 10 + playerWealth.gp + playerWealth.sp * 0.1 + playerWealth.cp * 0.01; }
+    function canAffordItem(price) { for (let [currency, amount] of Object.entries(price)) { if (playerWealth[currency] < amount) return false; } return true; }
+    function deductCurrency(price) { for (let [currency, amount] of Object.entries(price)) { playerWealth[currency] -= amount; } }
+
+    function loadWealth() {
+        const saved = localStorage.getItem('daShopWealth');
+        if (saved) {
+            playerWealth = JSON.parse(saved);
+            document.getElementById('ppInput').value = playerWealth.pp;
+            document.getElementById('gpInput').value = playerWealth.gp;
+            document.getElementById('spInput').value = playerWealth.sp;
+            document.getElementById('cpInput').value = playerWealth.cp;
+        }
+        updateTotalWealth();
+    }
+
+    function saveWealth() { localStorage.setItem('daShopWealth', JSON.stringify(playerWealth)); }
+    function updateTotalWealth() { document.getElementById('totalWealth').textContent = `Total: ${getTotalWealth().toFixed(2)} gp`; }
+    function updateWealthFromInputs() {
+        playerWealth.pp = parseInt(document.getElementById('ppInput').value) || 0;
+        playerWealth.gp = parseInt(document.getElementById('gpInput').value) || 0;
+        playerWealth.sp = parseInt(document.getElementById('spInput').value) || 0;
+        playerWealth.cp = parseInt(document.getElementById('cpInput').value) || 0;
+        saveWealth();
+        updateTotalWealth();
+        refreshItemButtons();
     }
 
     function refreshItemButtons() {
@@ -1226,6 +1112,61 @@
         }
     }
 
+    // DEV MODE (unchanged)
+    function toggleDevPanel() { document.getElementById('devOverride').classList.toggle('show'); }
+
+    function activateDevMode() {
+        const keyInput = document.getElementById('devKeyInput');
+        const status = document.getElementById('devStatus');
+        const enteredKey = keyInput.value.trim();
+
+        if (enteredKey === DEV_KEY) {
+            isDevMode = true;
+            status.innerHTML = '<span class="dev-active">ONLINE ⚡ Unlimited!</span>';
+            keyInput.value = '';
+            keyInput.placeholder = 'Dev Mode Active!';
+            document.getElementById('devOverride').style.boxShadow = '0 0 40px #00ff7f';
+            updateRefreshDisplay();
+            playSuccessSound();
+            setTimeout(toggleDevPanel, 1500);
+        } else {
+            status.innerHTML = '<span class="dev-inactive">WRONG KEY ❌</span>';
+            keyInput.value = '';
+            setTimeout(() => status.innerHTML = 'Dev Mode: <span class="dev-inactive">OFF</span>', 2000);
+        }
+    }
+
+    function playSuccessSound() {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        } catch(e) {}
+    }
+
+    function setupDevAccess() {
+        document.getElementById('devToggleBtn').addEventListener('click', toggleDevPanel);
+        let titleClickCount = 0;
+        document.getElementById('shopTitle').addEventListener('click', function() {
+            titleClickCount++;
+            if (titleClickCount === 3) {
+                toggleDevPanel();
+                titleClickCount = 0;
+                this.style.color = '#00ff7f';
+                setTimeout(() => this.style.color = '#ffd700', 1000);
+            }
+            setTimeout(() => titleClickCount = 0, 2000);
+        });
+    }
+
     function startParticles() {
         setInterval(() => {
             const particle = document.createElement('div');
@@ -1242,14 +1183,12 @@
     document.addEventListener('keydown', (e) => {
         if (e.code === 'Space') {
             e.preventDefault();
-            refreshStock(); // This NOW uses a refresh roll
+            refreshStock();  // ONLY THIS uses rolls!
         }
     });
 
     // INITIALIZE
     window.addEventListener('load', loadLootTable);
-
-    // Auto-refresh display every minute
     setInterval(updateRefreshDisplay, 60000);
 </script>
 </body>

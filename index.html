@@ -3,1199 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dragon Age - The Black Emporium</title>
+    <title>CYBERCLINIC // RI-PRO TERMINAL</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Uncial+Antiqua&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            background: linear-gradient(135deg, #1a0f1a 0%, #2d1b2d 50%, #1a0f1a 100%);
-            background-attachment: fixed;
-            font-family: 'Uncial Antiqua', cursive;
-            color: #e8d5b7;
+            font-family: 'Space Mono', monospace;
+            background-color: #0a0a0a;
+            color: #a3a3a3;
+            margin: 0;
             overflow-x: hidden;
-            min-height: 100vh;
-            position: relative;
         }
-
-        /* Floating Dev Button */
-        .dev-toggle-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(145deg, rgba(139,0,139,0.9), rgba(75,0,130,0.9));
-            border: 2px solid #9932cc;
-            border-radius: 50%;
-            cursor: pointer;
-            z-index: 2000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: #ffd700;
-            box-shadow: 0 0 20px rgba(153,50,204,0.5);
-            transition: all 0.3s ease;
-            animation: devPulse 3s infinite;
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
         }
-
-        .dev-toggle-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 30px rgba(153,50,204,0.8);
-        }
-
-        @keyframes devPulse {
-            0%, 100% { box-shadow: 0 0 20px rgba(153,50,204,0.5); }
-            50% { box-shadow: 0 0 30px rgba(153,50,204,0.8); }
-        }
-
-        /* Dev Override Panel */
-        .dev-override {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            width: 280px;
-            background: linear-gradient(145deg, rgba(139,0,139,0.95), rgba(75,0,130,0.95));
-            border: 2px solid #9932cc;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 0 30px rgba(153,50,204,0.6);
-            z-index: 1500;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateX(100%);
-            transition: all 0.3s ease;
-        }
-
-        .dev-override.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateX(0);
-        }
-
-        .dev-override-title {
-            font-size: 1.1rem;
-            color: #ffd700;
-            margin-bottom: 12px;
-            text-align: center;
-            text-shadow: 0 0 10px #ffd700;
-            font-family: 'Cinzel', serif;
-        }
-
-        .dev-key-input {
-            width: 100%;
-            padding: 10px 12px;
-            background: rgba(25,0,25,0.9);
-            border: 2px solid #9932cc;
-            border-radius: 8px;
-            color: #00ff7f;
-            font-family: 'Courier New', monospace;
-            font-size: 1rem;
-            text-align: center;
-            letter-spacing: 2px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-        }
-
-        .dev-key-input:focus {
-            outline: none;
-            border-color: #ffd700;
-            box-shadow: 0 0 15px rgba(255,215,0,0.6);
-        }
-
-        .dev-activate-btn {
-            width: 100%;
-            padding: 10px;
-            background: linear-gradient(145deg, #9932cc, #8a2be2);
-            color: #ffd700;
-            border: none;
-            border-radius: 8px;
-            font-family: 'Cinzel', serif;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-        }
-
-        .dev-activate-btn:hover {
-            background: linear-gradient(145deg, #ba55d3, #9932cc);
-            box-shadow: 0 0 15px rgba(153,50,204,0.6);
-        }
-
-        .dev-status {
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-align: center;
-            padding: 8px;
-            border-radius: 6px;
-        }
-
-        .dev-active { color: #00ff7f; text-shadow: 0 0 10px #00ff7f; background: rgba(0,255,127,0.2); border: 1px solid #00ff7f; }
-        .dev-inactive { color: #ff4757; background: rgba(255,71,87,0.2); border: 1px solid #ff4757; }
-
-        .dev-close-btn {
-            position: absolute;
-            top: 5px;
-            right: 10px;
-            background: none;
-            border: none;
-            color: #ffd700;
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-
-        .dev-close-btn:hover { background: rgba(255,255,255,0.1); }
-
-        /* Loading Screen */
-        .loading-screen {
+        .scanline-effect {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: #ffd700;
-            z-index: 3000;
-            transition: opacity 0.5s ease;
-        }
-
-        .loading-screen.hidden {
-            opacity: 0;
+            background: linear-gradient(to bottom, transparent 50%, rgba(0, 255, 255, 0.02) 50%);
+            background-size: 100% 4px;
             pointer-events: none;
-        }
-
-        .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(255,215,0,0.2);
-            border-top: 4px solid #ffd700;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .loading-text {
-            font-size: 1.5rem;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .error-message {
-            color: #ff4757;
-            font-size: 1rem;
-            text-align: center;
-            max-width: 400px;
-            line-height: 1.4;
-        }
-
-        /* VERSION WATERMARK STYLES */
-        .version-watermark {
-            font-family: 'Courier New', monospace;
-            background: rgba(0,0,0,0.7);
-            border: 1px solid #ffd700;
-            border-radius: 6px;
-            padding: 4px 8px;
-            margin-top: 8px;
-            display: inline-block;
-            animation: versionGlow 2s ease-in-out infinite alternate;
-        }
-
-        .version-updated {
-            color: #00ff7f !important;
-            border-color: #00ff7f !important;
-            box-shadow: 0 0 10px rgba(0,255,127,0.5);
-        }
-
-        .version-outdated {
-            color: #ff4757 !important;
-            border-color: #ff4757 !important;
-            box-shadow: 0 0 10px rgba(255,71,87,0.5);
-            animation: versionPulse 1s infinite;
-        }
-
-        @keyframes versionGlow {
-            0% { box-shadow: 0 0 5px rgba(255,215,0,0.3); }
-            100% { box-shadow: 0 0 15px rgba(255,215,0,0.6); }
-        }
-
-        @keyframes versionPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                radial-gradient(circle at 20% 80%, rgba(139,69,19,0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(75,0,130,0.1) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .shop-container { max-width: 1400px; margin: 0 auto; padding: 20px; position: relative; }
-        .shop-header { text-align: center; margin-bottom: 20px; }
-        .shop-title {
-            font-family: 'Cinzel', serif;
-            font-size: 3.5rem;
-            font-weight: 700;
-            color: #ffd700;
-            text-shadow: 0 0 10px #ffd700, 2px 2px 4px rgba(0,0,0,0.8);
-            margin-bottom: 10px;
-            letter-spacing: 3px;
-            cursor: pointer;
-        }
-        .shop-subtitle { font-size: 1.2rem; color: #b8860b; font-style: italic; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
-
-        .currency-section {
-            background: rgba(0,0,0,0.7);
-            border: 2px solid #8b4513;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            text-align: center;
-            box-shadow: 0 0 20px rgba(139,69,19,0.3);
-        }
-
-        .currency-title { font-size: 1.3rem; color: #ffd700; margin-bottom: 10px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
-        .currency-inputs { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 10px; }
-        .currency-group { display: flex; flex-direction: column; align-items: center; }
-        .currency-group label { font-size: 0.9rem; color: #d4af37; margin-bottom: 5px; }
-        .currency-group input {
-            width: 80px;
-            padding: 8px;
-            background: rgba(45,27,45,0.8);
-            border: 1px solid #8b4513;
-            border-radius: 5px;
-            color: #ffd700;
-            text-align: center;
-            font-family: inherit;
-        }
-        .currency-group input:focus { outline: none; border-color: #ffd700; box-shadow: 0 0 10px rgba(255,215,0,0.5); }
-        .total-wealth { font-size: 1.1rem; color: #ff6b35; font-weight: 600; }
-
-        /* Player Name Input */
-        .player-name-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .player-name-group label {
-            font-size: 0.9rem;
-            color: #d4af37;
-            margin-bottom: 5px;
-        }
-        .player-name-group input {
-            width: 120px;
-            padding: 8px;
-            background: rgba(45,27,45,0.8);
-            border: 1px solid #8b4513;
-            border-radius: 5px;
-            color: #ffd700;
-            text-align: center;
-            font-family: inherit;
-        }
-        .player-name-group input:focus {
-            outline: none;
-            border-color: #ffd700;
-            box-shadow: 0 0 10px rgba(255,215,0,0.5);
-        }
-        .player-name-group input::placeholder {
-            color: #b8860b;
-            font-style: italic;
-        }
-
-        .controls { text-align: center; margin-bottom: 30px; font-size: 1.1rem; }
-        .refresh-info {
-            background: rgba(0,0,0,0.7);
-            border: 2px solid #8b4513;
-            border-radius: 10px;
-            padding: 15px 25px;
-            display: inline-block;
-            margin-bottom: 10px;
-            box-shadow: 0 0 20px rgba(139,69,19,0.3);
-        }
-
-        .refresh-limit {
-            background: rgba(139,69,19,0.3);
-            border: 1px solid #ffd700;
-            border-radius: 8px;
-            padding: 10px 15px;
-            margin-top: 10px;
-            font-size: 1rem;
-            color: #ffd700;
-        }
-
-        .refresh-limit.dev-bypass {
-            background: rgba(0,255,127,0.3);
-            border-color: #00ff7f;
-            color: #00ff7f;
-            animation: pulse-green 2s infinite;
-        }
-
-        .refresh-limit.warning {
-            background: rgba(255,71,87,0.3);
-            border-color: #ff4757;
-            color: #ff4757;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse-green { 0%, 100% { box-shadow: 0 0 5px #00ff7f; } 50% { box-shadow: 0 0 20px #00ff7f; } }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-
-        .refresh-count { font-weight: bold; color: #00ff7f; }
-        .cooldown-timer { font-weight: bold; color: #ff4757; font-size: 1.1rem; }
-
-        .items-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-
-        .item-card {
-            background: linear-gradient(145deg, rgba(45,27,45,0.95), rgba(25,15,25,0.95));
-            border: 2px solid #8b4513;
-            border-radius: 15px;
-            padding: 25px;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-        }
-
-        .item-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 40px rgba(139,69,19,0.4);
-            border-color: #ffd700;
-        }
-
-        .item-image {
-            width: 100%;
-            height: 200px;
-            background: linear-gradient(45deg, #4a2c2a, #3d1f1d);
-            border-radius: 10px;
-            margin-bottom: 15px;
-            position: relative;
-            overflow: hidden;
-            border: 2px solid #654321;
-        }
-
-        .item-name {
-            font-family: 'Cinzel', serif;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #ffd700;
-            margin-bottom: 10px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-        }
-
-        .item-description {
-            color: #d4af37;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            margin-bottom: 15px;
-            font-style: italic;
-        }
-
-        .item-price {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #ff6b35;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-
-        .coin-icon {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            margin-right: 3px;
-            position: relative;
-            top: 2px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .coin-pp { background: radial-gradient(circle, #e5e4e2, #b8b6b4); }
-        .coin-gp { background: radial-gradient(circle, #ffd700, #ffed4e); }
-        .coin-sp { background: radial-gradient(circle, #c0c0c0, #f5f5f5); }
-        .coin-cp { background: radial-gradient(circle, #cd7f32, #b5651d); }
-
-        .item-stats {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-        }
-
-        .stat-tag {
-            background: rgba(139,69,19,0.3);
-            color: #ffd700;
-            padding: 4px 12px;
-            border-radius: 20px;
-            border: 1px solid #8b4513;
-            font-weight: 500;
-        }
-
-        .stock-indicator {
-            font-size: 0.85rem;
-            color: #00ff7f;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .buy-button {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(145deg, #8b4513, #a0522d);
-            color: #ffd700;
-            border: none;
-            border-radius: 8px;
-            font-family: 'Cinzel', serif;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-        }
-
-        .buy-button:hover:not(:disabled) {
-            background: linear-gradient(145deg, #a0522d, #cd853f);
-            transform: translateY(-2px);
-        }
-
-        .buy-button:disabled {
-            background: #4a4a4a;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        .insufficient-funds { color: #ff4757 !important; font-weight: bold; }
-
-        .refresh-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: #ffd700;
-            font-size: 2rem;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .refresh-overlay.show { opacity: 1; visibility: visible; }
-        .refresh-overlay .key-display { font-size: 4rem; margin: 20px 0; text-shadow: 0 0 20px #ffd700; animation: pulse 1s infinite; }
-
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-
-        .footer {
-            text-align: center;
-            padding: 30px;
-            color: #b8860b;
-            font-size: 0.9rem;
-            border-top: 1px solid #8b4513;
-            margin-top: 40px;
-        }
-
-        @media (max-width: 768px) {
-            .shop-title { font-size: 2.5rem; }
-            .items-grid { grid-template-columns: 1fr; gap: 20px; }
-            .currency-inputs { gap: 10px; }
-            .currency-group input { width: 60px; }
-            .player-name-group input { width: 100px; }
-        }
-
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: #ffd700;
-            border-radius: 50%;
-            animation: float 6s infinite linear;
-            opacity: 0.6;
-        }
-
-        @keyframes float {
-            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            10% { opacity: 0.6; }
-            90% { opacity: 0.6; }
-            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+            z-index: 100;
         }
     </style>
 </head>
 <body>
-    <!-- LOADING SCREEN -->
-    <div class="loading-screen" id="loadingScreen">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">Loading Black Emporium...</div>
-        <div class="loading-text" style="font-size: 0.9rem; color: #b8860b;">Fetching loot tables from vault...</div>
-        <div class="error-message" id="errorMessage" style="display: none;"></div>
-    </div>
+    <div id="root"></div>
+    <div class="scanline-effect"></div>
 
-    <!-- Dev Toggle -->
-    <div class="dev-toggle-btn" id="devToggleBtn" title="🔮 Dev Mode">🔮</div>
-    <div class="dev-override" id="devOverride">
-        <button class="dev-close-btn" onclick="toggleDevPanel()">✕</button>
-        <div class="dev-override-title">🔮 Arcane Override 🔮</div>
-        <input type="password" class="dev-key-input" id="devKeyInput" placeholder="Enter Code" maxlength="8">
-        <button class="dev-activate-btn" onclick="activateDevMode()">ACTIVATE</button>
-        <div class="dev-status" id="devStatus">Dev Mode: <span class="dev-inactive">OFF</span></div>
-    </div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-    <div class="shop-container">
-        <div class="shop-header">
-            <h1 class="shop-title" id="shopTitle">The Black Emporium</h1>
-            <p class="shop-subtitle">Rare Wares for Discerning Adventurers</p>
-        </div>
+        // Configuration
+        const DATA_SOURCE = './loot-table.json';
+        const CHIP_IMAGE = './icon-chip.png';
 
-        <div class="currency-section">
-            <div class="currency-title">Your Vault: Enter Your Wealth</div>
-            <div class="currency-inputs">
-                <div class="player-name-group">
-                    <label>Player Name</label>
-                    <input type="text" id="playerNameInput" placeholder="Enter Name" maxlength="20">
+        const App = () => {
+            const [inventory, setInventory] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            useEffect(() => {
+                const loadData = async () => {
+                    try {
+                        const response = await fetch(DATA_SOURCE);
+                        if (!response.ok) throw new Error('DATA_LOAD_FAILURE');
+                        const data = await response.json();
+                        setInventory(data.inventory);
+                        setLoading(false);
+                    } catch (err) {
+                        console.error(err);
+                        setError("CRITICAL_SYSTEM_ERROR: UNABLE TO ACCESS LOOT_TABLE.JSON");
+                        setLoading(false);
+                    }
+                };
+                loadData();
+            }, []);
+
+            if (loading) return (
+                <div className="h-screen flex items-center justify-center bg-black">
+                    <div className="text-red-600 text-xs tracking-[0.5em] animate-pulse">INITIALIZING_BIOMETRIC_LINK...</div>
                 </div>
-                <div class="currency-group">
-                    <label>Platinum (pp)</label>
-                    <input type="number" id="ppInput" min="0" value="0">
+            );
+
+            if (error) return (
+                <div className="h-screen flex flex-col items-center justify-center bg-black p-10">
+                    <div className="text-red-500 text-xl font-black italic mb-4">!! ERROR !!</div>
+                    <div className="text-red-900 text-xs uppercase border border-red-900 p-4">{error}</div>
                 </div>
-                <div class="currency-group">
-                    <label>Gold (gp)</label>
-                    <input type="number" id="gpInput" min="0" value="0">
+            );
+
+            return (
+                <div className="min-h-screen flex flex-col select-none">
+                    {/* Sticky Header */}
+                    <header className="sticky top-0 z-50 bg-neutral-900/90 backdrop-blur-md border-b border-neutral-800 px-6 py-6 flex justify-between items-center">
+                        <div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse shadow-[0_0_12px_rgba(220,38,38,1)]"></div>
+                                <h1 className="text-3xl md:text-4xl font-black text-white italic tracking-tighter uppercase leading-none">CYBERCLINIC</h1>
+                            </div>
+                            <p className="text-[9px] text-neutral-600 font-bold uppercase tracking-[0.4em] mt-2 ml-1">Ripperdoc Terminal / Sector_04 / Victor_V</p>
+                        </div>
+                        <div className="hidden sm:flex flex-col text-right">
+                            <span className="text-[10px] text-cyan-600 font-black tracking-widest">SECURE_LINK: ACTIVE</span>
+                            <span className="text-[9px] text-neutral-700 uppercase">Buffer: 1024mb</span>
+                        </div>
+                    </header>
+
+                    {/* Content */}
+                    <main className="flex-1 w-full max-w-4xl mx-auto p-4 md:p-10 space-y-12">
+                        <div className="border-l-4 border-red-600 pl-4 py-1">
+                            <h2 className="text-sm font-black text-neutral-500 uppercase tracking-[0.4em]">Hardware Catalog</h2>
+                            <p className="text-[10px] text-neutral-700 italic uppercase">System synchronization with local loot_table success.</p>
+                        </div>
+
+                        <div className="space-y-6 pb-24">
+                            {inventory.map((item, idx) => (
+                                <div key={idx} className={`flex flex-col md:flex-row bg-neutral-900/40 border-l-4 ${item.color || 'border-neutral-700'} border border-neutral-800/50 hover:bg-neutral-800/60 transition-all group overflow-hidden`}>
+                                    {/* Chip Image */}
+                                    <div className="w-full md:w-44 aspect-video md:aspect-square bg-black/80 flex items-center justify-center border-r border-neutral-800 relative">
+                                        <img 
+                                            src={CHIP_IMAGE} 
+                                            alt="Hardware" 
+                                            className="w-full h-full object-contain p-4 opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500"
+                                            onError={(e) => e.target.src = 'https://via.placeholder.com/200?text=CHIP'}
+                                        />
+                                        <div className="absolute top-2 left-2 text-[8px] text-neutral-600 font-bold uppercase">ID: {idx + 101}</div>
+                                    </div>
+
+                                    {/* Info */}
+                                    <div className="flex-1 p-6 flex flex-col justify-center">
+                                        <div className="flex justify-between items-start mb-1">
+                                            <span className="text-[10px] font-black text-cyan-600 uppercase tracking-widest">{item.category}</span>
+                                            <span className="text-[9px] font-bold text-neutral-600 uppercase bg-neutral-950 px-2 py-0.5 border border-neutral-800">{item.tier}</span>
+                                        </div>
+                                        <h3 className="text-2xl font-black text-white italic tracking-tighter mb-4 group-hover:text-cyan-400 transition-colors uppercase">{item.name}</h3>
+                                        <div className="space-y-1.5">
+                                            {item.desc.map((d, i) => (
+                                                <div key={i} className="flex gap-2 items-center">
+                                                    <div className="w-1 h-1 bg-red-600 rounded-full"></div>
+                                                    <p className="text-[11px] text-neutral-400 italic leading-tight">{d}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Pricing */}
+                                    <div className="w-full md:w-44 bg-neutral-950/40 border-l border-neutral-800 p-6 flex flex-col justify-center items-center md:items-end">
+                                        <span className="text-[10px] text-neutral-600 font-black uppercase tracking-tighter mb-1 italic">Price</span>
+                                        <span className="text-3xl font-black text-yellow-500 tracking-tighter leading-none mb-4">§{item.price}</span>
+                                        <button className="w-full bg-neutral-800 hover:bg-red-600 text-white text-[10px] font-black uppercase py-2.5 transition-all border border-neutral-700 hover:border-red-400 active:scale-95 shadow-xl">
+                                            Install
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </main>
+
+                    {/* Fixed Footer */}
+                    <footer className="fixed bottom-0 w-full bg-black border-t border-neutral-900 px-6 py-3 flex justify-between items-center text-[10px] text-neutral-700 font-black uppercase tracking-widest z-50">
+                        <div className="flex gap-6">
+                            <span className="flex items-center gap-2"><span className="w-1.5 h-1.5 bg-green-900 rounded-full"></span>Biometrics: OK</span>
+                            <span className="hidden sm:inline">Sync_Protocol: ACTIVE</span>
+                        </div>
+                        <span>[ESC] TO DISCONNECT</span>
+                    </footer>
                 </div>
-                <div class="currency-group">
-                    <label>Silver (sp)</label>
-                    <input type="number" id="spInput" min="0" value="0">
-                </div>
-                <div class="currency-group">
-                    <label>Bronze (cp)</label>
-                    <input type="number" id="cpInput" min="0" value="0">
-                </div>
-            </div>
-            <div class="total-wealth" id="totalWealth">Total: 0 gp</div>
-        </div>
-
-        <div class="controls">
-            <div class="refresh-info" id="refreshInfo">
-                💰 Press <strong>SPACEBAR</strong> to refresh stock 💰
-                <div class="refresh-limit" id="refreshLimit">
-                    <span id="refreshCount">2/2</span> refreshes remaining this hour
-                </div>
-            </div>
-        </div>
-
-        <div class="items-grid" id="itemsGrid"></div>
-
-        <div class="footer" id="versionFooter">
-            ⚔️ Dragon Age: The Veilguard ⚔️ | 📦 Items from loot-table.json | 🔮 Click purple orb for Dev Mode
-            <div id="versionWatermark" style="display: none; margin-top: 8px; font-size: 0.8rem;"></div>
-        </div>
-    </div>
-
-    <div class="refresh-overlay" id="refreshOverlay">
-        <div>Refreshing Stock...</div>
-        <div class="key-display">⟳</div>
-        <div>New wares appear!</div>
-    </div>
-
-<script>
-    // VERSION WATERMARK SYSTEM
-    const SHOP_VERSION = "v2.2.2";
-    const STORAGE_KEY = 'shopVersion';
-
-    // WEBHOOK CONFIG
-    const WEBHOOK_URL = 'https://discord.com/api/webhooks/1429997152645415104/4dlKg8Gf1ca43BJ57SAYYfqjkslR_RtLjiasDRvrnAPXRi1kG4iG_8CkKw9QV3yhalPS';
-
-    // GLOBAL VARIABLES
-    let itemTemplates = [];
-    let currentStock = [];
-    let playerWealth = { pp: 0, gp: 0, sp: 0, cp: 0 };
-    let playerName = '';
-    let isDevMode = false;
-    const DEV_KEY = "WARDEN69";
-    const MAX_FREE_REFRESHES = 2;
-    const REFRESH_WINDOW = 60 * 60 * 1000; // 1 hour
-
-    // *** PERFECTLY LOCKED ROLL SYSTEM ***
-    function loadRollState() {
-        const saved = localStorage.getItem('daShopRollState');
-        if (saved) {
-            const state = JSON.parse(saved);
-            const now = Date.now();
-            // Check if cooldown expired
-            if (now - state.lastRefreshTime >= REFRESH_WINDOW && state.rollsUsed === MAX_FREE_REFRESHES) {
-                console.log("⏰ COOLDOWN EXPIRED - Reset to LOCKED 0/2");
-                const newInitialStock = generateRandomStock();
-                saveRollState(0, newInitialStock);
-                return { rollsUsed: 0, stock: newInitialStock, lastRefreshTime: 0 };
-            }
-            return state;
-        }
-        // *** FIRST TIME - IMMEDIATELY LOCK INITIAL STOCK ***
-        const initialStock = generateRandomStock();
-        saveRollState(0, initialStock); // SAVE IT IMMEDIATELY!
-        console.log("🔒 FIRST TIME - INITIAL STOCK LOCKED & SAVED!");
-        return { rollsUsed: 0, stock: initialStock, lastRefreshTime: 0 };
-    }
-
-    function saveRollState(rollsUsed, stock) {
-        localStorage.setItem('daShopRollState', JSON.stringify({
-            rollsUsed,
-            stock,
-            lastRefreshTime: Date.now()
-        }));
-    }
-
-    // *** TESTING FUNCTION - TRIPLE CLICK TITLE TO RESET ***
-    function resetShopForTesting() {
-        localStorage.removeItem('daShopRollState');
-        localStorage.removeItem('daShopWealth');
-        localStorage.removeItem('daShopPlayerName');
-        console.log("🧹 SHOP FULLY RESET FOR TESTING!");
-        location.reload();
-    }
-
-    // WEBHOOK PURCHASE NOTIFICATION (unchanged)
-    async function sendPurchaseToWebhook(item, quantity) {
-        if (!playerName) return;
-        const totalCost = (item.price.pp || 0) * 10 + (item.price.gp || 0) + (item.price.sp || 0) * 0.1 + (item.price.cp || 0) * 0.01;
-        const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
-        const payload = {
-            embeds: [{
-                title: "🛒 Purchase Alert",
-                color: 0xFFD700,
-                fields: [
-                    { name: "Player", value: playerName, inline: true },
-                    { name: "Item", value: `${item.name} (x${quantity})`, inline: true },
-                    { name: "Cost", value: `${totalCost.toFixed(2)} gp`, inline: true },
-                    { name: "Time", value: timestamp, inline: false }
-                ],
-                footer: { text: `The Black Emporium | ${SHOP_VERSION}` }
-            }]
+            );
         };
 
-        try {
-            await fetch(WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            console.log(`✅ Sent webhook for ${playerName}'s purchase of ${item.name}`);
-        } catch (error) {
-            console.error('❌ Webhook failed:', error);
-        }
-    }
-
-    // VERSION WATERMARK FUNCTIONS
-    function checkVersionAndShowWatermark(rollsUsed) {
-        const lastVersion = localStorage.getItem(STORAGE_KEY);
-        const watermark = document.getElementById('versionWatermark');
-        
-        watermark.innerHTML = `🛒 SHOP ${SHOP_VERSION} - 🔒 LOCKED ${rollsUsed}/${MAX_FREE_REFRESHES}`;
-        watermark.style.display = 'inline-block';
-        watermark.className = 'version-watermark';
-        watermark.style.color = rollsUsed === 2 ? '#ff4757' : (rollsUsed === 0 ? '#ffd700' : '#00ff7f');
-        
-        if (lastVersion !== SHOP_VERSION) {
-            watermark.innerHTML += ` 🎉 FIRST ROLL LOCKED!`;
-            watermark.classList.add('version-updated');
-            localStorage.setItem(STORAGE_KEY, SHOP_VERSION);
-            playVersionUpdateSound();
-        }
-    }
-
-    function playVersionUpdateSound() {
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            const notes = [523, 659, 784];
-            notes.forEach((freq, i) => {
-                oscillator.frequency.setValueAtTime(freq, audioContext.currentTime + i * 0.2);
-                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime + i * 0.2);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.2 + 0.15);
-            });
-            oscillator.start();
-            oscillator.stop(audioContext.currentTime + 0.6);
-        } catch(e) {}
-    }
-
-    // PLAYER NAME FUNCTIONS (unchanged)
-    function loadPlayerName() {
-        const saved = localStorage.getItem('daShopPlayerName');
-        if (saved) {
-            playerName = saved;
-            document.getElementById('playerNameInput').value = playerName;
-        }
-    }
-
-    function savePlayerName() {
-        localStorage.setItem('daShopPlayerName', playerName);
-    }
-
-    function promptForPlayerName() {
-        if (!playerName) {
-            const nameInput = document.getElementById('playerNameInput');
-            nameInput.focus();
-            nameInput.placeholder = 'Please enter your name!';
-            nameInput.style.borderColor = '#ff4757';
-            setTimeout(() => {
-                nameInput.placeholder = 'Enter Name';
-                nameInput.style.borderColor = '#8b4513';
-            }, 2000);
-            return false;
-        }
-        return true;
-    }
-
-    // LOAD LOOT TABLE (unchanged)
-    async function loadLootTable() {
-        try {
-            const response = await fetch('loot-table.json');
-            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            const data = await response.json();
-            itemTemplates = data.itemTemplates;
-            if (itemTemplates.length === 0) throw new Error('Loot table is empty!');
-            console.log(`✅ Loaded ${itemTemplates.length} items from loot-table.json`);
-            initializeShop();
-        } catch (error) {
-            console.error('❌ Failed to load loot table:', error);
-            showError(`Failed to load loot table: ${error.message}<br><br>Make sure <code>loot-table.json</code> exists in the same folder!`);
-        }
-    }
-
-    function showError(message) {
-        const loadingScreen = document.getElementById('loadingScreen');
-        const errorMsg = document.getElementById('errorMessage');
-        errorMsg.innerHTML = message;
-        errorMsg.style.display = 'block';
-        loadingScreen.classList.remove('hidden');
-    }
-
-    // *** FULLY LOCKED INITIALIZE ***
-    function initializeShop() {
-        setupDevAccess();
-        setupCurrency();
-        loadWealth();
-        loadPlayerName();
-        
-        // *** LOAD & LOCK STATE ***
-        const rollState = loadRollState();
-        const rollsUsed = rollState.rollsUsed;
-        currentStock = rollState.stock;
-        
-        console.log(`🔒 PAGE LOAD: FULLY LOCKED ${rollsUsed}/${MAX_FREE_REFRESHES}`);
-        console.log(`🔒 STOCK: ${currentStock.length} items - CTRL+R will NOT change!`);
-        
-        document.getElementById('itemsGrid').innerHTML = currentStock.map(createItemCard).join('');
-        updateRefreshDisplay(rollsUsed);
-        checkVersionAndShowWatermark(rollsUsed);
-        
-        startParticles();
-        promptForPlayerName();
-        setTimeout(() => {
-            document.getElementById('loadingScreen').classList.add('hidden');
-        }, 1000);
-    }
-
-    function updateRefreshDisplay(rollsUsed) {
-        const refreshInfo = document.getElementById('refreshInfo');
-
-        if (isDevMode) {
-            refreshInfo.innerHTML = `
-                💰 Press <strong>SPACEBAR</strong> to refresh stock 💰
-                <div class="refresh-limit dev-bypass">
-                    <span class="refresh-count">🔮 DEV MODE ACTIVE</span><br>
-                    <small>Unlimited Refreshes!</small>
-                </div>
-            `;
-            return;
-        }
-
-        if (rollsUsed < MAX_FREE_REFRESHES) {
-            refreshInfo.innerHTML = `
-                💰 Press <strong>SPACEBAR</strong> to <strong>UNLOCK</strong> next roll 💰
-                <div class="refresh-limit locked-stage">
-                    <span id="refreshCount">🔒 LOCKED ${rollsUsed}/${MAX_FREE_REFRESHES}</span>
-                    <br><small><strong>CTRL+R = SAME STOCK!</strong></small>
-                </div>
-            `;
-        } else {
-            const timeLeft = Math.ceil((REFRESH_WINDOW - (Date.now() - loadRollState().lastRefreshTime)) / 1000);
-            refreshInfo.innerHTML = `
-                ⏳ <strong>MAX ROLLS REACHED</strong> ⏳
-                <div class="refresh-limit warning">
-                    <span class="cooldown-timer">🔒 LOCKED 2/2 - ${formatTimeLeft(timeLeft)} until reset</span>
-                    <br><small><strong>Stock is PERMANENT!</strong></small>
-                </div>
-            `;
-            startCountdown();
-        }
-    }
-
-    function formatTimeLeft(seconds) {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins}m ${secs}s`;
-    }
-
-    let countdownInterval = null;
-    function startCountdown() {
-        if (countdownInterval) clearInterval(countdownInterval);
-        countdownInterval = setInterval(() => {
-            const rollState = loadRollState();
-            if (Date.now() - rollState.lastRefreshTime >= REFRESH_WINDOW) {
-                clearInterval(countdownInterval);
-                const newInitialStock = generateRandomStock();
-                saveRollState(0, newInitialStock);
-                location.reload();
-                return;
-            }
-            const timeLeft = Math.ceil((REFRESH_WINDOW - (Date.now() - rollState.lastRefreshTime)) / 1000);
-            document.querySelector('.cooldown-timer').innerHTML = `🔒 LOCKED 2/2 - ${formatTimeLeft(timeLeft)} until reset<br><small><strong>Stock is PERMANENT!</strong></small>`;
-        }, 1000);
-    }
-
-    // *** LOCKED REROLL ***
-    function refreshStock() {
-        const rollState = loadRollState();
-        const rollsUsed = rollState.rollsUsed;
-
-        if (rollsUsed >= MAX_FREE_REFRESHES && !isDevMode) {
-            updateRefreshDisplay(rollsUsed);
-            return;
-        }
-
-        const newStock = generateRandomStock();
-        document.getElementById('itemsGrid').innerHTML = newStock.map(createItemCard).join('');
-        saveRollState(rollsUsed + 1, newStock);
-        
-        const overlay = document.getElementById('refreshOverlay');
-        overlay.innerHTML = `🔓 UNLOCKED STAGE ${rollsUsed + 1}/${MAX_FREE_REFRESHES}`;
-        overlay.classList.add('show');
-        setTimeout(() => {
-            overlay.classList.remove('show');
-            updateRefreshDisplay(rollsUsed + 1);
-        }, 1500);
-        
-        console.log(`🔓 STAGE ${rollsUsed + 1}/${MAX_FREE_REFRESHES} LOCKED!`);
-    }
-
-    // [ALL OTHER FUNCTIONS - generateRandomStock, createItemCard, currency, buyItem - UNCHANGED]
-    function generateRandomStock() {
-        const stock = [];
-        const stockSize = 8 + Math.floor(Math.random() * 4);
-        const commons = itemTemplates.filter(item => item.rarity === 'common');
-        let legendaryCount = 0;
-
-        const shuffledCommons = commons.sort(() => Math.random() - 0.5);
-        const selectedCommons = shuffledCommons.slice(0, Math.min(5, commons.length));
-        selectedCommons.forEach(itemTemplate => {
-            const item = {
-                ...itemTemplate,
-                id: Date.now() + Math.random(),
-                stock: Math.floor(Math.random() * (itemTemplate.stockRange[1] - itemTemplate.stockRange[0] + 1)) + itemTemplate.stockRange[0]
-            };
-            stock.push(item);
-        });
-
-        const remainingSlots = stockSize - stock.length;
-        if (remainingSlots > 0) {
-            const rarityWeights = { legendary: 1, epic: 5, rare: 10, uncommon: 15, common: 20 };
-            const weightedItems = itemTemplates.map(item => ({ item, weight: rarityWeights[item.rarity] || 10 }));
-            const totalWeight = weightedItems.reduce((sum, { weight }) => sum + weight, 0);
-
-            for (let i = 0; i < remainingSlots; i++) {
-                const roll = Math.random() * totalWeight;
-                let cumulativeWeight = 0;
-                let selectedItem = null;
-
-                for (let { item, weight } of weightedItems) {
-                    cumulativeWeight += weight;
-                    if (roll <= cumulativeWeight) {
-                        if (Math.random() <= item.spawnChance && (item.rarity !== 'legendary' || legendaryCount < 1)) {
-                            selectedItem = item;
-                            if (item.rarity === 'legendary') legendaryCount++;
-                            break;
-                        }
-                    }
-                }
-
-                if (!selectedItem) {
-                    const fallbacks = [
-                        itemTemplates.filter(item => item.rarity === 'uncommon' && Math.random() <= item.spawnChance),
-                        itemTemplates.filter(item => item.rarity === 'common')
-                    ];
-                    for (let fallbackList of fallbacks) {
-                        if (fallbackList.length > 0) {
-                            selectedItem = fallbackList[Math.floor(Math.random() * fallbackList.length)];
-                            break;
-                        }
-                    }
-                }
-
-                if (selectedItem) {
-                    const item = {
-                        ...selectedItem,
-                        id: Date.now() + i + Math.random(),
-                        stock: Math.floor(Math.random() * (selectedItem.stockRange[1] - selectedItem.stockRange[0] + 1)) + selectedItem.stockRange[0]
-                    };
-                    stock.push(item);
-                }
-            }
-        }
-        return stock;
-    }
-
-    // [REMAINING FUNCTIONS - SAME AS BEFORE]
-    const rarityColors = { common: '#c0c0c0', uncommon: '#00ff7f', rare: '#4169e1', epic: '#9932cc', legendary: '#ffd700' };
-
-    function getItemImageStyle(rarity) {
-        const styles = {
-            common: 'linear-gradient(45deg, #8b7355, #a0522d)',
-            uncommon: 'linear-gradient(45deg, #228b22, #32cd32)',
-            rare: 'linear-gradient(45deg, #4169e1, #1e90ff)',
-            epic: 'linear-gradient(45deg, #8a2be2, #9932cc)',
-            legendary: 'linear-gradient(45deg, #ffd700, #ffed4e)'
-        };
-        return styles[rarity] || styles.common;
-    }
-
-    function formatPrice(price) {
-        let priceHtml = '';
-        for (let [currency, amount] of Object.entries(price)) {
-            if (amount > 0) {
-                const coinClass = `coin-icon coin-${currency}`;
-                const coinsToShow = Math.min(amount, 5);
-                priceHtml += `<span style="display: flex; align-items: center; gap: 3px;">
-                    ${Array(coinsToShow).fill(0).map(() => `<span class="${coinClass}"></span>`).join('')}
-                    ${amount > 5 ? `<span style="font-weight: bold;">+${amount-5}</span>` : `<span style="font-weight: bold;">${amount}</span>`}
-                    <span style="font-size: 0.9rem; margin-left: 3px;">${currency.toUpperCase()}</span>
-                </span>`;
-            }
-        }
-        return priceHtml;
-    }
-
-    function createItemCard(item) {
-        const rarityColor = rarityColors[item.rarity] || '#ffffff';
-        const imageStyle = getItemImageStyle(item.rarity);
-        const canAfford = canAffordItem(item.price);
-        return `
-            <div class="item-card" style="--rarity-color: ${rarityColor}" data-item-id="${item.id}">
-                <div class="item-image" style="background: ${imageStyle}">
-                    <div style="position: absolute; top: 10px; right: 10px; background: ${rarityColor}; color: #000; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;">
-                        ${item.rarity.toUpperCase()}
-                    </div>
-                </div>
-                <div class="item-name">${item.name}</div>
-                <div class="item-description">${item.description}</div>
-                <div class="item-stats">
-                    ${item.stats.map(stat => `<span class="stat-tag">${stat}</span>`).join('')}
-                </div>
-                <div class="stock-indicator">${item.stock} in stock</div>
-                <div class="item-price" id="price-${item.id}">${formatPrice(item.price)}</div>
-                <button class="buy-button ${canAfford ? '' : 'insufficient-funds'}" onclick="buyItem(${item.id})" ${!canAfford ? 'disabled' : ''}>
-                    ${canAfford ? `Purchase (${item.stock} left)` : 'Need Exact Coins'}
-                </button>
-            </div>
-        `;
-    }
-
-    function setupCurrency() {
-        document.querySelectorAll('.currency-group input').forEach(input => input.addEventListener('input', updateWealthFromInputs));
-        document.getElementById('playerNameInput').addEventListener('input', () => {
-            playerName = document.getElementById('playerNameInput').value.trim();
-            savePlayerName();
-        });
-    }
-
-    function getTotalWealth() { return playerWealth.pp * 10 + playerWealth.gp + playerWealth.sp * 0.1 + playerWealth.cp * 0.01; }
-    function canAffordItem(price) { for (let [currency, amount] of Object.entries(price)) { if (playerWealth[currency] < amount) return false; } return true; }
-    function deductCurrency(price) { for (let [currency, amount] of Object.entries(price)) { playerWealth[currency] -= amount; } }
-
-    function loadWealth() {
-        const saved = localStorage.getItem('daShopWealth');
-        if (saved) {
-            playerWealth = JSON.parse(saved);
-            document.getElementById('ppInput').value = playerWealth.pp;
-            document.getElementById('gpInput').value = playerWealth.gp;
-            document.getElementById('spInput').value = playerWealth.sp;
-            document.getElementById('cpInput').value = playerWealth.cp;
-        }
-        updateTotalWealth();
-    }
-
-    function saveWealth() { localStorage.setItem('daShopWealth', JSON.stringify(playerWealth)); }
-    function updateTotalWealth() { document.getElementById('totalWealth').textContent = `Total: ${getTotalWealth().toFixed(2)} gp`; }
-    function updateWealthFromInputs() {
-        playerWealth.pp = parseInt(document.getElementById('ppInput').value) || 0;
-        playerWealth.gp = parseInt(document.getElementById('gpInput').value) || 0;
-        playerWealth.sp = parseInt(document.getElementById('spInput').value) || 0;
-        playerWealth.cp = parseInt(document.getElementById('cpInput').value) || 0;
-        saveWealth();
-        updateTotalWealth();
-        refreshItemButtons();
-    }
-
-    function refreshItemButtons() {
-        currentStock.forEach(item => {
-            const canAfford = canAffordItem(item.price);
-            const button = document.querySelector(`[onclick="buyItem(${item.id})"]`);
-            if (button) {
-                button.textContent = canAfford ? `Purchase (${item.stock} left)` : 'Need Exact Coins';
-                button.disabled = !canAfford;
-                button.className = `buy-button ${canAfford ? '' : 'insufficient-funds'}`;
-            }
-        });
-    }
-
-    function buyItem(itemId) {
-        const item = currentStock.find(i => i.id === itemId);
-        if (item && item.stock > 0 && canAffordItem(item.price)) {
-            if (!promptForPlayerName()) return;
-            deductCurrency(item.price);
-            document.getElementById('ppInput').value = playerWealth.pp;
-            document.getElementById('gpInput').value = playerWealth.gp;
-            document.getElementById('spInput').value = playerWealth.sp;
-            document.getElementById('cpInput').value = playerWealth.cp;
-            saveWealth();
-            updateTotalWealth();
-            item.stock--;
-            const card = document.querySelector(`[data-item-id="${itemId}"]`);
-            const button = card.querySelector('.buy-button');
-            const stockIndicator = card.querySelector('.stock-indicator');
-            stockIndicator.textContent = `${item.stock} in stock`;
-            button.textContent = item.stock === 0 ? 'SOLD OUT' : `Purchase (${item.stock} left)`;
-            if (item.stock === 0) button.disabled = true;
-            card.style.boxShadow = '0 0 30px #00ff00';
-            sendPurchaseToWebhook(item, 1);
-            setTimeout(() => {
-                card.style.boxShadow = '';
-                refreshItemButtons();
-            }, 500);
-        }
-    }
-
-    function toggleDevPanel() { document.getElementById('devOverride').classList.toggle('show'); }
-
-    function activateDevMode() {
-        const keyInput = document.getElementById('devKeyInput');
-        const status = document.getElementById('devStatus');
-        const enteredKey = keyInput.value.trim();
-
-        if (enteredKey === DEV_KEY) {
-            isDevMode = true;
-            status.innerHTML = '<span class="dev-active">ONLINE ⚡ Unlimited!</span>';
-            keyInput.value = '';
-            keyInput.placeholder = 'Dev Mode Active!';
-            document.getElementById('devOverride').style.boxShadow = '0 0 40px #00ff7f';
-            updateRefreshDisplay(loadRollState().rollsUsed);
-            playSuccessSound();
-            setTimeout(toggleDevPanel, 1500);
-        } else {
-            status.innerHTML = '<span class="dev-inactive">WRONG KEY ❌</span>';
-            keyInput.value = '';
-            setTimeout(() => status.innerHTML = 'Dev Mode: <span class="dev-inactive">OFF</span>', 2000);
-        }
-    }
-
-    function playSuccessSound() {
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            oscillator.frequency.value = 800;
-            oscillator.type = 'sine';
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.5);
-        } catch(e) {}
-    }
-
-    function setupDevAccess() {
-        document.getElementById('devToggleBtn').addEventListener('click', toggleDevPanel);
-        
-        // *** TRIPLE CLICK TITLE = RESET SHOP FOR TESTING ***
-        let titleClickCount = 0;
-        document.getElementById('shopTitle').addEventListener('click', function() {
-            titleClickCount++;
-            this.style.color = '#ff0000';
-            
-            if (titleClickCount === 3) {
-                console.log("🧹 TRIPLE CLICK DETECTED - RESETTING SHOP!");
-                resetShopForTesting();
-            }
-            
-            setTimeout(() => {
-                if (titleClickCount !== 3) this.style.color = '#ffd700';
-            }, 200);
-            
-            setTimeout(() => titleClickCount = 0, 2000);
-        });
-    }
-
-    function startParticles() {
-        setInterval(() => {
-            const particle = document.createElement('div');
-            particle.className = 'particle';
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.animationDuration = (4 + Math.random() * 4) + 's';
-            particle.style.animationDelay = Math.random() * 2 + 's';
-            document.body.appendChild(particle);
-            setTimeout(() => particle.remove(), 8000);
-        }, 1000);
-    }
-
-    // EVENT LISTENERS
-    document.addEventListener('keydown', (e) => {
-        if (e.code === 'Space') {
-            e.preventDefault();
-            refreshStock();
-        }
-    });
-
-    // INITIALIZE
-    window.addEventListener('load', loadLootTable);
-</script>
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
